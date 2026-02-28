@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE CRATE</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23e5383b%22/><text y=%2275%22 x=%2220%22 font-size=%2280%22 font-family=%22sans-serif%22 fill=%22%23121110%22>C</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400..800&family=Zilla+Slab:ital,wght@0,300;0,600;1,300;1,600&display=swap" rel="stylesheet">
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <style>
+        :root { --bg-deep: #0f0e0d; --bg-paper: #e2dcd0; --accent-blood: #e5383b; --accent-acid: #dbff00; --accent-purple: #7b2cbf; --font-display: 'Syne', sans-serif; --font-body: 'Zilla Slab', serif; --gap-weird: clamp(1.2rem, 2vw, 2rem); --ease-snap: cubic-bezier(0.85, 0, 0.15, 1); }
+        * { box-sizing: border-box; margin: 0; padding: 0; cursor: none; }
+        body { background-color: var(--bg-deep); color: var(--bg-paper); font-family: var(--font-body); overflow-x: hidden; line-height: 1.6; scroll-behavior: smooth; }
+        ::selection { background: var(--accent-acid); color: var(--bg-deep); }
+        #noise-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; opacity: 0.04; mix-blend-mode: overlay; }
+        
+        .custom-cursor { width: 14px; height: 14px; background: var(--accent-blood); border-radius: 50%; position: fixed; pointer-events: none; z-index: 999999; transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s, background 0.3s; mix-blend-mode: difference; }
+        .custom-cursor.hovering { width: 60px; height: 60px; background: var(--accent-acid); }
+
+        h1, h2, h3, h4 { font-family: var(--font-display); text-transform: uppercase; font-variation-settings: "wght" 800; line-height: 0.95; }
+        .nav-header { position: fixed; top: 0; left: 0; width: 100%; padding: 1.2rem 3vw; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; font-family: var(--font-display); font-weight: 800; z-index: 1000; background: var(--bg-deep); border-bottom: 2px solid rgba(226, 220, 208, 0.1); gap: 1rem; }
+        .nav-links { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+        .nav-links a { color: var(--bg-paper); text-decoration: none; position: relative; font-size: clamp(0.9rem, 1.5vw, 1.1rem); transition: color 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--accent-acid); }
+
+        .view-section { display: none; opacity: 0; animation: fadeIn 0.4s forwards; padding-top: 18vh; min-height: 100vh; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } from { opacity: 0; transform: translateY(10px); } }
+
+        .bento-container { padding: 0 4vw 10vh 5vw; display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap-weird); grid-auto-flow: dense; }
+        .bento-card { background: var(--bg-paper); color: var(--bg-deep); padding: 2rem; position: relative; transition: all 0.4s var(--ease-snap); border: 2px solid var(--bg-deep); display: flex; flex-direction: column; box-shadow: 6px 6px 0px rgba(229, 56, 59, 0.2); overflow: hidden; }
+        .bento-card h3 { font-size: clamp(1.1rem, 2vw, 1.8rem); line-height: 1.1; margin-top: 1.2rem; word-break: normal; overflow-wrap: break-word; hyphens: none; }
+        .bento-card p { margin-top: 1rem; opacity: 0.8; font-size: clamp(0.9rem, 1.2vw, 1rem); line-height: 1.5; }
+        .bento-card:hover { transform: translate(-4px, -6px) rotate(-0.5deg); box-shadow: 10px 12px 0px var(--accent-acid); }
+        .card-large { grid-column: span 8; grid-row: span 2; min-height: 35vh; background: var(--bg-deep); color: var(--bg-paper); border-color: var(--bg-paper); }
+        .card-tall { grid-column: span 4; grid-row: span 2; }
+        .card-wide { grid-column: span 8; }
+        .card-small { grid-column: span 4; }
+        .card-hottest { grid-column: span 12; background: var(--accent-blood); color: #fff; border-color: var(--accent-blood); padding: 3rem; }
+        .card-hottest h3 { font-size: clamp(1.8rem, 3vw, 3rem); line-height: 0.9; }
+        .card-hottest p { font-size: 1.2rem; opacity: 0.9; max-width: 800px;}
+        .card-hottest:hover { box-shadow: 10px 12px 0px var(--accent-acid); }
+        .tag { font-family: var(--font-display); font-size: 0.75rem; font-weight: 800; background: var(--bg-deep); color: var(--bg-paper); padding: 0.3rem 0.6rem; display: inline-block; align-self: flex-start; margin-bottom: 0.5rem; }
+        .tag.us { background: #1a1a1a; color: var(--accent-acid); border: 1px solid var(--accent-acid); }
+        .tag.pl { background: #fff; color: #e5383b; border: 1px solid #e5383b; }
+        .card-hottest .tag { background: var(--bg-deep); color: var(--accent-acid); }
+
+        .vault-input { background: transparent; border: none; border-bottom: 4px solid var(--bg-paper); color: var(--accent-acid); font-family: var(--font-display); font-size: clamp(1.2rem, 3vw, 2.5rem); padding: 1rem 0; font-weight: 800; width: 100%; transition: border-color 0.3s; margin-bottom: 3rem;}
+        .vault-input:focus { outline: none; border-color: var(--accent-acid); }
+        .article-header { padding: 0 5vw 3rem 5vw; border-bottom: 4px solid var(--accent-blood); margin-bottom: 3rem; }
+        .article-h1 { font-size: clamp(2rem, 5vw, 4rem); margin-top: 1rem; overflow-wrap: break-word; line-height: 0.9;}
+        .article-body { max-width: 900px; margin: 0 auto; padding: 0 5vw 10vh 5vw; font-size: 1.15rem; line-height: 1.8; }
+        .article-body p { margin-bottom: 2rem; text-align: justify; }
+        .media-embed { width: 100%; aspect-ratio: 16/9; border: 4px solid var(--accent-acid); margin: 2rem 0; box-shadow: 8px 8px 0px rgba(219, 255, 0, 0.2); }
+        .back-btn { background: transparent; border: 2px solid var(--bg-paper); color: var(--bg-paper); padding: 0.8rem 1.5rem; font-family: var(--font-display); font-weight: 700; margin: 0 5vw 2rem 5vw; display: inline-block; transition: all 0.3s;}
+        .back-btn:hover { background: var(--bg-paper); color: var(--bg-deep); transform: translateX(-5px);}
+
+        /* MASHUP MIXER UI */
+        .mixer-container { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 0 5vw 5vh 5vw; }
+        .dj-deck { border: 2px solid var(--accent-acid); padding: 2rem; display: flex; flex-direction: column; gap: 1rem; background: var(--bg-deep); }
+        .dj-deck-player { width: 100%; height: 200px; border: 2px dashed rgba(226, 220, 208, 0.3); background: #000; position: relative; overflow:hidden;}
+        .mashup-console { grid-column: span 2; padding: 3rem; background: var(--bg-paper); color: var(--bg-deep); text-align: center; border: 2px solid var(--bg-deep); box-shadow: 8px 8px 0px var(--accent-blood); display: flex; flex-direction: column; align-items: center; gap: 1.5rem;}
+        .big-mashup-btn { font-size: 2rem; padding: 1.5rem 3rem; background: var(--bg-deep); color: var(--accent-acid); border: 4px solid var(--accent-acid); text-transform: uppercase; font-family: var(--font-display); font-weight: 800; transition: 0.3s;}
+        .big-mashup-btn:hover { background: var(--accent-acid); color: var(--bg-deep); box-shadow: 8px 8px 0px var(--bg-deep); transform: translate(-4px, -4px);}
+        .big-mashup-btn:disabled { opacity: 0.5; filter: grayscale(1); pointer-events: none;}
+        #mashup-loading { display: none; font-family: monospace; font-size: 1.2rem; color: var(--bg-deep); font-weight: bold; width: 100%; max-width: 500px; }
+        .progress-bar { width: 100%; height: 20px; border: 2px solid var(--bg-deep); margin-top: 10px; position: relative; overflow: hidden;}
+        .progress-fill { height: 100%; width: 0%; background: var(--accent-blood); transition: width 0.1s; }
+
+        /* BATTLE UI */
+        .battle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 0 5vw; align-items: start;}
+        .battle-panel { border: 2px solid rgba(226, 220, 208, 0.2); padding: 2.5rem 2rem; display: flex; flex-direction: column; gap: 1rem; }
+        .form-input { background: transparent; border: none; border-bottom: 3px solid var(--bg-paper); color: var(--accent-acid); font-family: var(--font-display); font-size: 1.5rem; padding: 0.5rem 0; font-weight: 700; width: 100%; }
+        .form-input:focus { outline: none; border-color: var(--accent-acid); }
+        .brutal-btn { background: var(--accent-acid); color: var(--bg-deep); border: none; font-family: var(--font-display); font-weight: 800; padding: 1rem 2rem; display: inline-block; font-size: 1.2rem;}
+        .brutal-btn:hover:not(:disabled) { transform: translate(-4px, -4px); box-shadow: 6px 6px 0px var(--accent-blood); }
+        .room-item { border: 1px dashed rgba(226, 220, 208, 0.3); padding: 1rem; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-display); margin-bottom: 1rem; transition: all 0.2s; }
+        .room-item:hover { border-style: solid; border-color: var(--accent-acid); background: rgba(219, 255, 0, 0.05); }
+
+        #game-arena { display: none; padding: 0 5vw 10vh 5vw; text-align: center; }
+        .arena-title { font-size: clamp(2rem, 5vw, 4rem); margin-bottom: 1rem; line-height: 0.8;}
+        .arena-status { font-family: var(--font-display); font-size: 1.2rem; font-weight: 800; color: var(--accent-blood); animation: pulse 2s infinite; margin-bottom: 3rem;}
+        .game-box { border: 2px solid var(--accent-acid); padding: 3rem 2rem; max-width: 800px; margin: 0 auto; background: rgba(0,0,0,0.5); box-shadow: 10px 10px 0px rgba(219, 255, 0, 0.2);}
+        #yt-player-container { position: relative; width: 100%; height: 250px; border: 4px solid var(--accent-purple); margin-bottom: 2rem; overflow: hidden; background: #000; }
+        #yt-player { position: absolute; top:0; left:0; width:100%; height:100%; z-index: 1; pointer-events: none;}
+        .audio-blackout { position: absolute; top:0; left:0; width:100%; height:100%; background: #000; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--accent-acid); font-family: var(--font-display); font-size: 2rem; font-weight: 800; }
+        .yt-result-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px dashed rgba(226,220,208,0.2); margin-bottom: 0.5rem; transition: all 0.2s; }
+        .yt-result-item:hover { border-color: var(--accent-acid); background: rgba(219,255,0,0.1); transform: translateX(5px); }
+
+        #ui-notification { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--accent-blood); color: #fff; padding: 1rem 2rem; font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; z-index: 99999; display: none; box-shadow: 5px 5px 0px var(--bg-deep); }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        /* DIGGER_AI */
+        #ai-trigger-btn { position: fixed; top: 50%; right: 0; transform: translateY(-50%); background: var(--accent-acid); color: var(--bg-deep); writing-mode: vertical-rl; text-orientation: mixed; padding: 1.5rem 0.5rem; font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; z-index: 10001; border: none; border-radius: 8px 0 0 8px; box-shadow: -4px 4px 0px rgba(0,0,0,0.5); transition: transform 0.2s; }
+        #ai-trigger-btn:hover { transform: translateY(-50%) translateX(-5px); }
+        #ai-trigger-btn.hidden { transform: translateY(-50%) translateX(100%); }
+        #digger-ai { position: fixed; top: 0; right: 0; height: 100vh; z-index: 10000; width: 380px; background: var(--bg-deep); border-left: 2px solid var(--accent-acid); box-shadow: -8px 0px 15px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.4s var(--ease-snap); }
+        #digger-ai.open { transform: translateX(0); }
+        .ai-header { background: var(--accent-acid); color: var(--bg-deep); padding: 1rem; font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+        .ai-messages { flex: 1; overflow-y: auto; padding: 1.5rem; font-family: monospace; font-size: 1rem; color: var(--bg-paper); display: flex; flex-direction: column; gap: 1rem; }
+        .ai-msg { border-left: 2px solid var(--accent-blood); padding-left: 10px; opacity: 0.9; margin-bottom: 0.5rem; }
+        .ai-msg.user { border-left: none; border-right: 2px solid var(--accent-acid); text-align: right; padding-right: 10px; color: var(--accent-acid); }
+        .ai-input-container { display: flex; border-top: 1px solid rgba(226,220,208,0.2); padding: 1rem; }
+        .ai-input { flex: 1; background: transparent; border: none; padding: 0.5rem; color: var(--accent-acid); font-family: monospace; font-size: 1.1rem; border-bottom: 2px solid var(--accent-blood); }
+        .ai-input:focus { outline: none; border-color: var(--accent-acid); }
+
+        /* LIVE ALERT CSS DLA NOWYCH ARTYKUŁÓW */
+        #live-alert { position: fixed; bottom: 20px; right: -450px; width: 350px; background: var(--bg-paper); color: var(--bg-deep); border-left: 6px solid var(--accent-blood); padding: 1.5rem; box-shadow: -8px 8px 0px rgba(229, 56, 59, 0.2); transition: right 0.5s var(--ease-snap); z-index: 100000; font-family: var(--font-body); }
+        #live-alert.show { right: 20px; }
+        #live-alert h4 { font-family: var(--font-display); color: var(--accent-blood); margin-bottom: 0.5rem; font-size: 1.2rem; }
+
+        @media (max-width: 1200px) { .card-large { grid-column: span 12; min-height: auto; } .card-wide { grid-column: span 12; } .card-tall { grid-column: span 6; grid-row: auto; } .card-small { grid-column: span 6; } }
+        @media (max-width: 900px) { .nav-links { display: none; } .card-large, .card-tall, .card-wide, .card-small, .card-hottest { grid-column: span 12; } .battle-grid, .mixer-container { grid-template-columns: 1fr; } #digger-ai { width: 100vw; } }
+    </style>
+</head>
+<body>
+
+    <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#noiseFilter)"/></svg>
+    <div class="custom-cursor" id="cursor"></div>
+    <div id="ui-notification"></div>
+
+    <div id="live-alert">
+        <div style="font-size: 0.8rem; font-weight: bold; color: var(--bg-deep); opacity: 0.5; margin-bottom: 5px;">🔴 SYSTEM: WYKRYTO NOWY WYCIEK</div>
+        <h4 id="alert-title">Tytuł</h4>
+        <p id="alert-desc" style="font-size: 0.9rem;">Opis...</p>
+    </div>
+
+    <nav class="nav-header">
+        <div class="logo hover-target" onclick="navigate('latest')" style="font-size: 1.5rem;">THE CRATE.</div>
+        <div class="nav-links">
+            <a href="#latest" class="hover-target active" id="nav-latest" onclick="navigate('latest'); return false;">LATEST</a>
+            <a href="#archive" class="hover-target" id="nav-archive" onclick="navigate('archive'); return false;">ARCHIVE ↳</a>
+            <a href="#leaks" class="hover-target" id="nav-leaks" onclick="navigate('leaks'); return false;" style="color: var(--accent-blood);">LEAKS & SNIPPETS</a>
+            <a href="#mixer" class="hover-target" id="nav-mixer" onclick="navigate('mixer'); return false;" style="color: var(--accent-acid);">THE MIXER ↹</a>
+            <a href="#battle" class="hover-target" id="nav-battle" onclick="navigate('battle'); return false;">AUX BATTLE <span style="color:var(--accent-purple)">●</span></a>
+        </div>
+    </nav>
+
+    <main id="view-latest" class="view-section active"><div style="padding: 0 5vw 1rem 5vw;"><h1 style="font-size: clamp(2rem, 5vw, 4rem);">FRESH DROPS.</h1></div><section class="bento-container" id="latest-grid"></section></main>
+    <main id="view-archive" class="view-section"><div style="padding: 0 5vw 1rem 5vw;"><h1 style="font-size: clamp(2rem, 5vw, 4rem);">THE ARCHIVE.</h1><input type="text" id="archive-search" class="vault-input hover-target" placeholder="SZUKAJ W BAZIE..." onkeyup="filterArchive()"></div><section class="bento-container" id="archive-grid"></section></main>
+    <main id="view-leaks" class="view-section"><div style="padding: 0 5vw 1rem 5vw;"><h1 style="font-size: clamp(2rem, 5vw, 4rem); color: var(--accent-blood);">RAW AUDIO.</h1></div><section class="bento-container" id="leaks-grid"></section></main>
+    <main id="view-article" class="view-section"><button class="back-btn hover-target" onclick="history.back()">← WSTECZ</button><article id="article-content"></article></main>
+
+    <main id="view-mixer" class="view-section">
+        <div style="padding: 0 5vw 2rem 5vw;"><h1 style="font-size: clamp(2rem, 5vw, 4rem); color: var(--accent-acid);">AI MASHUP GENERATOR</h1></div>
+        <div class="mixer-container">
+            <div class="dj-deck">
+                <h2>UTWÓR 1 (BIT)</h2>
+                <div style="display: flex; gap: 10px;"><input type="text" id="mixer-search-a" class="form-input hover-target" placeholder="np. Travis Scott instrumental"><button class="brutal-btn hover-target" style="padding: 0.5rem 1rem;" onclick="searchMixer('A')">SZUKAJ</button></div>
+                <div id="mixer-results-a" style="max-height: 150px; overflow-y: auto;"></div>
+                <div id="player-container-a" class="dj-deck-player"><div id="yt-deck-a" style="position:absolute; width:100%; height:100%;"></div><div class="audio-blackout" style="font-size:1.2rem;" id="cover-a">CZEKAM NA TRACK...</div></div>
+            </div>
+            <div class="dj-deck">
+                <h2 style="color: var(--accent-purple);">UTWÓR 2 (WOKAL)</h2>
+                <div style="display: flex; gap: 10px;"><input type="text" id="mixer-search-b" class="form-input hover-target" placeholder="np. Oki acapella"><button class="brutal-btn hover-target" style="padding: 0.5rem 1rem; background: var(--accent-purple);" onclick="searchMixer('B')">SZUKAJ</button></div>
+                <div id="mixer-results-b" style="max-height: 150px; overflow-y: auto;"></div>
+                <div id="player-container-b" class="dj-deck-player"><div id="yt-deck-b" style="position:absolute; width:100%; height:100%;"></div><div class="audio-blackout" style="font-size:1.2rem; color:var(--accent-purple);" id="cover-b">CZEKAM NA TRACK...</div></div>
+            </div>
+            <div class="mashup-console">
+                <button id="btn-create-mashup" class="big-mashup-btn hover-target" onclick="generateMashup()" disabled>GENERUJ MASHUP</button>
+                <div id="mashup-loading">
+                    <div id="mashup-status-text">ANALIZA BPM I SEPARACJA STEMÓW...</div>
+                    <div class="progress-bar"><div class="progress-fill" id="mashup-progress"></div></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <main id="view-battle" class="view-section">
+        <div id="lobby-ui">
+            <div style="padding: 0 5vw 3rem 5vw;"><h1 style="font-size: clamp(2rem, 5vw, 4rem);">AUX BATTLE</h1></div>
+            <div class="battle-grid">
+                <div style="display: flex; flex-direction: column; gap: 2rem;">
+                    <div class="battle-panel" style="border-color: var(--accent-acid);"><h3 style="color:var(--accent-acid)">/ STWÓRZ POKÓJ</h3><input type="text" class="form-input hover-target" placeholder="TWÓJ ALIAS" id="host-name"><input type="password" class="form-input hover-target" placeholder="HASŁO (OPCJA)" id="host-pwd" style="font-size: 1rem;"><button class="brutal-btn hover-target" onclick="createRoom()" style="margin-top: 1rem;">OTWÓRZ</button></div>
+                    <div class="battle-panel"><h3 style="color:var(--accent-purple)">/ WEJDŹ DO GRY</h3><input type="text" id="join-alias" class="form-input hover-target" placeholder="TWÓJ ALIAS" style="margin-bottom: 1rem; border-color: var(--accent-purple); color: var(--accent-purple);"><div id="live-rooms-list"><p style="opacity: 0.5;">Skanowanie...</p></div></div>
+                </div>
+            </div>
+        </div>
+        <div id="game-arena">
+            <h1 class="arena-title">CYPHER: <span id="arena-room-id" style="color:var(--accent-purple)"></span></h1>
+            <p class="arena-status" id="arena-status-text">OCZEKIWANIE NA RYWALA</p>
+            <div id="game-controls" class="game-box" style="display: none;">
+                <div id="host-view" style="display: none;"><h3 style="color: var(--accent-acid); font-size: 1.5rem; margin-bottom: 1rem;">WYSZUKAJ TRACK</h3><div style="display: flex; gap: 1rem; margin-bottom: 2rem;"><input type="text" class="form-input hover-target" id="yt-search-input" placeholder="Wpisz np. Skepta..."><button class="brutal-btn hover-target" onclick="searchYouTube('host')">SZUKAJ</button></div><div id="yt-search-results-host"></div></div>
+                <div id="guesser-view" style="display: none;"><h3 style="color: var(--accent-acid); font-size: 2rem; margin-bottom: 1rem;">SŁUCHAJ!</h3><div class="score-display">PUNKTY: <span id="points-val">1000</span></div><div id="yt-player-container"><div id="yt-player" style="position:absolute; width:100%; height:100%;"></div><div class="audio-blackout"><span>AUDIO ONLY</span></div></div><button class="brutal-btn hover-target" id="btn-play-audio" style="width: 100%; margin-bottom: 1rem;" onclick="startListening()" disabled>ŁADOWANIE...</button><button class="brutal-btn hover-target" id="btn-stop-audio" style="width: 100%; margin-bottom: 2rem; display: none; background: var(--accent-blood); color: #fff;" onclick="stopAndGuess()">[ STOP ] ZNAM TO!</button><div id="guess-form" style="display: none; border-top: 2px dashed rgba(226,220,208,0.2); padding-top: 2rem;"><div class="timer-display">CZAS: <span id="countdown-val">30</span>s</div><div style="display: flex; gap: 1rem; margin-bottom: 1rem;"><input type="text" class="form-input hover-target" id="guess-search-input" placeholder="Wyszukaj odpowiedź..." onkeyup="notifyTyping()"><button class="brutal-btn hover-target" onclick="searchYouTube('guesser')">SZUKAJ</button></div><div id="yt-search-results-guesser"></div></div></div>
+            </div>
+        </div>
+    </main>
+
+    <button id="ai-trigger-btn" class="hover-target" onclick="toggleAI()">DIGGER_AI</button>
+    <div id="digger-ai">
+        <div class="ai-header"><span style="color: var(--bg-deep);">DIGGER_AI (GPT-4o)</span><span style="cursor:pointer;" class="hover-target" onclick="toggleAI()">[ X ]</span></div>
+        <div class="ai-messages" id="ai-chat-box"><div class="ai-msg">MÓZG ONLINE. Co tam, mordo? Pytaj o rap.</div></div>
+        <div class="ai-input-container"><input type="text" class="ai-input hover-target" id="ai-input-field" placeholder="Napisz do AI..." onkeypress="handleAIChat(event)"></div>
+    </div>
+
+    <script>
+        const cursor = document.getElementById('cursor'); let mX = 0, mY = 0, cX = 0, cY = 0;
+        document.addEventListener('mousemove', e => { mX = e.clientX; mY = e.clientY; });
+        function loop() { cX += (mX - cX) * 0.15; cY += (mY - cY) * 0.15; cursor.style.left = cX + 'px'; cursor.style.top = cY + 'px'; requestAnimationFrame(loop); } loop();
+        document.body.addEventListener('mouseover', e => { if(e.target.closest('.hover-target') || e.target.closest('button')) cursor.classList.add('hovering'); });
+        document.body.addEventListener('mouseout', e => { if(e.target.closest('.hover-target') || e.target.closest('button')) cursor.classList.remove('hovering'); });
+
+        function showNotification(msg, isError = false) {
+            const notif = document.getElementById('ui-notification'); notif.innerText = msg;
+            notif.style.background = isError ? 'var(--accent-blood)' : 'var(--accent-acid)';
+            notif.style.color = isError ? '#fff' : 'var(--bg-deep)';
+            notif.style.display = 'block'; setTimeout(() => notif.style.display = 'none', 3000);
+        }
+
+        let db = {}; 
+        let socket;
+        try { socket = io(); } catch(e) { console.warn("Brak połączenia na żywo."); }
+
+        // ODBIERANIE POWIADOMIEŃ NA ŻYWO!
+        if(socket) {
+            socket.on('newArticleAdded', (data) => {
+                const alertBox = document.getElementById('live-alert');
+                document.getElementById('alert-title').innerText = data.title;
+                document.getElementById('alert-desc').innerText = data.snippet;
+                alertBox.classList.add('show');
+                
+                // Automatyczne odświeżenie kafelków w tle
+                loadDatabaseSilent(); 
+
+                setTimeout(() => { alertBox.classList.remove('show'); }, 8000);
+            });
+        }
+
+        async function loadDatabaseSilent() {
+            try {
+                const response = await fetch('/api/articles?_t=' + new Date().getTime());
+                db = await response.json();
+                const hash = window.location.hash.replace('#', '') || 'latest';
+                if(hash === 'latest') renderSection('latest-grid', 'news');
+                if(hash === 'leaks') renderSection('leaks-grid', 'leak');
+                if(hash === 'archive') renderSection('archive-grid', 'archive');
+            } catch (err) {}
+        }
+
+        async function loadDatabase() {
+            try {
+                const response = await fetch('/api/articles?_t=' + new Date().getTime());
+                if(!response.ok) throw new Error("Błąd");
+                db = await response.json();
+            } catch (err) {}
+            const hash = window.location.hash.replace('#', '') || 'latest';
+            navigate(hash);
+        }
+
+        function renderSection(sectionId, filterCategory, searchQuery = '') {
+            const grid = document.getElementById(sectionId); if(!grid) return;
+            grid.innerHTML = ''; 
+            
+            if(!db || Object.keys(db).length === 0) {
+                grid.innerHTML = '<h3 style="grid-column: span 12; padding: 2rem; color: var(--accent-acid);">Brak danych.</h3>';
+                return;
+            }
+
+            const query = searchQuery.toLowerCase();
+            let articles = Object.entries(db).map(([k, v]) => ({ key: k, ...v }));
+            articles.reverse(); let isFirstNewsRendered = false;
+
+            articles.forEach((item) => {
+                if (filterCategory === 'news' && item.category === 'archive') return;
+                if (filterCategory === 'leak' && item.category !== 'leak') return;
+                if (filterCategory !== 'all' && filterCategory !== 'news' && filterCategory !== 'leak' && filterCategory !== 'archive' && item.category !== filterCategory) return;
+                
+                if (item.title && (item.title.toLowerCase().includes(query) || item.snippet.toLowerCase().includes(query) || (item.searchTags && item.searchTags.toLowerCase().includes(query)))) {
+                    const tagCat = item.category === 'leak' ? '<span class="tag" style="background:var(--accent-blood);">LEAK</span>' : '';
+                    let cardClass = 'card-wide'; let featuredLabel = '';
+                    
+                    if (filterCategory === 'news' && !isFirstNewsRendered && !searchQuery) {
+                        cardClass = 'card-hottest'; featuredLabel = '<span class="tag" style="background:var(--accent-acid); color:#000;">🔥 HOTTEST DROP</span>';
+                        isFirstNewsRendered = true;
+                    }
+                    grid.innerHTML += `<article class="bento-card ${cardClass} hover-target" onclick="navigate('article', '${item.key}')">
+                        <div style="display:flex; gap:10px; flex-wrap: wrap;">${featuredLabel}<span class="tag ${item.region === 'PL' ? 'pl' : 'us'}">${item.region} SCENA</span> ${tagCat}</div>
+                        <h3>${item.title}</h3><p>${item.snippet}</p></article>`;
+                }
+            });
+        }
+
+        function filterArchive() { renderSection('archive-grid', 'archive', document.getElementById('archive-search').value); }
+        
+        function navigate(viewId, articleId = null) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            if(viewId === 'article' && articleId && db[articleId]) {
+                const data = db[articleId];
+                document.getElementById('article-content').innerHTML = `<div class="article-header"><div style="margin-bottom: 1rem;"><span class="tag ${data.region === 'PL' ? 'pl' : 'us'}">${data.region} SCENA</span></div><h1 class="article-h1">${data.title}</h1></div><div class="article-body">${data.content}</div>`;
+                document.getElementById('view-article').classList.add('active');
+            } else { 
+                document.getElementById(`view-${viewId}`).classList.add('active');
+                if(viewId === 'latest') renderSection('latest-grid', 'news');
+                if(viewId === 'archive') renderSection('archive-grid', 'archive');
+                if(viewId === 'leaks') renderSection('leaks-grid', 'leak');
+            }
+            window.scrollTo(0, 0);
+        }
+
+        function toggleAI() {
+            const aiBox = document.getElementById('digger-ai'); const btn = document.getElementById('ai-trigger-btn');
+            if(aiBox.classList.contains('open')) { aiBox.classList.remove('open'); btn.classList.remove('hidden'); } 
+            else { aiBox.classList.add('open'); btn.classList.add('hidden'); document.getElementById('ai-input-field').focus(); }
+        }
+
+        async function handleAIChat(e) {
+            if (e.key === 'Enter') {
+                const input = document.getElementById('ai-input-field'); const val = input.value.trim(); if(!val) return;
+                const chatBox = document.getElementById('ai-chat-box');
+                chatBox.innerHTML += `<div class="ai-msg user">${val}</div>`; input.value = '';
+                const loadingId = "msg-" + Date.now();
+                chatBox.innerHTML += `<div class="ai-msg" id="${loadingId}" style="opacity: 0.5;">[Przetwarzanie danych GPT-4o...]</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+                try {
+                    const response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: val }) });
+                    const data = await response.json(); 
+                    document.getElementById(loadingId).innerHTML = data.reply; 
+                    document.getElementById(loadingId).style.opacity = 1;
+                } catch (err) { 
+                    document.getElementById(loadingId).innerHTML = "Błąd na łączach!"; 
+                    document.getElementById(loadingId).style.color = "var(--accent-blood)"; 
+                }
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+
+        let deckAId = null; let deckBId = null;
+        let ytDeckA = null; let ytDeckB = null;
+
+        function searchMixer(deck) {
+            const query = document.getElementById(`mixer-search-${deck.toLowerCase()}`).value;
+            if(!query) return; document.getElementById(`mixer-results-${deck.toLowerCase()}`).innerHTML = '<p>Szukam...</p>';
+            if(socket) socket.emit('searchTrackMixer', { query: query, deck: deck });
+        }
+
+        if(socket) {
+            socket.on('searchResultsMixer', (data) => {
+                const container = document.getElementById(`mixer-results-${data.deck.toLowerCase()}`); 
+                container.innerHTML = '';
+                if(data.error || data.videos.length === 0) {
+                    return container.innerHTML = '<p style="color:var(--accent-blood);">Brak wyników z YouTube.</p>';
+                }
+                data.videos.forEach(vid => {
+                    const safeTitle = vid.title.replace(/'/g, "\\'").replace(/"/g, '"');
+                    container.innerHTML += `<div class="yt-result-item hover-target" onclick="loadDeckReady('${data.deck}', '${vid.id}', '${safeTitle}')" style="cursor:pointer; font-size:0.9rem;"><img src="${vid.thumb}" style="width: 60px; height: 34px;"> <span>${vid.title}</span></div>`;
+                });
+            });
+        }
+
+        function loadDeckReady(deck, ytId, title) {
+            document.getElementById(`mixer-results-${deck.toLowerCase()}`).innerHTML = '';
+            document.getElementById(`cover-${deck.toLowerCase()}`).innerHTML = `<span style="font-size:1rem;">ZAŁADOWANO:</span><br><span style="color:#fff">${title}</span>`;
+            if(deck === 'A') deckAId = ytId; else deckBId = ytId;
+            if(deckAId && deckBId) {
+                document.getElementById('btn-create-mashup').disabled = false;
+                document.getElementById('btn-create-mashup').innerText = "GENERUJ MASHUP";
+            }
+        }
+
+        function generateMashup() {
+            document.getElementById('btn-create-mashup').style.display = 'none';
+            document.getElementById('mashup-loading').style.display = 'block';
+            let progress = 0; const statusText = document.getElementById('mashup-status-text');
+            const fill = document.getElementById('mashup-progress');
+
+            const interval = setInterval(() => {
+                progress += 5; fill.style.width = progress + '%';
+                if(progress === 30) statusText.innerText = "EKSTRAKCJA WOKALU...";
+                if(progress === 60) statusText.innerText = "DOPASOWYWANIE BPM I TONACJI...";
+                if(progress === 90) statusText.innerText = "RENDEROWANIE MASHUPU...";
+                if(progress >= 100) {
+                    clearInterval(interval);
+                    statusText.innerText = "MASHUP GOTOWY! ODTWARZANIE...";
+                    playMashupTogether();
+                }
+            }, 300);
+        }
+
+        function playMashupTogether() {
+            document.getElementById('cover-a').style.display = 'none';
+            document.getElementById('cover-b').style.display = 'none';
+            ytDeckA = new YT.Player('yt-deck-a', { height: '100%', width: '100%', videoId: deckAId, playerVars: { 'autoplay': 1, 'controls': 0 }, events: { 'onReady': (e) => e.target.setVolume(100) } });
+            ytDeckB = new YT.Player('yt-deck-b', { height: '100%', width: '100%', videoId: deckBId, playerVars: { 'autoplay': 1, 'controls': 0 }, events: { 'onReady': (e) => e.target.setVolume(80) } });
+        }
+
+        let myRoomId = null; let isHost = false; let ytPlayerBattle = null; let ytAPIReady = false; let points = 1000; let guessTime = 30; let scoreInterval, guessInterval;
+        function onYouTubeIframeAPIReady() { ytAPIReady = true; }
+        function createRoom() { const alias = document.getElementById('host-name').value; if(!alias) return showNotification("Wpisz alias!"); isHost = true; if(socket) socket.emit('createRoom', { alias, password: document.getElementById('host-pwd').value }); }
+        function joinRoom(roomId, isLocked) { const myAlias = document.getElementById('join-alias').value; if(!myAlias) return showNotification("Wpisz swój alias!"); let pwd = null; if(isLocked) { pwd = window.prompt("Hasło:"); if(!pwd) return; } if(socket) socket.emit('joinRoom', { roomId: roomId, alias: myAlias, password: pwd }); }
+        if(socket) {
+            socket.on('updateRooms', (roomsObj) => {
+                const list = document.getElementById('live-rooms-list'); list.innerHTML = ''; const rooms = Object.values(roomsObj); if(rooms.length===0) return list.innerHTML = '<p style="opacity:0.5;">Cisza.</p>';
+                rooms.forEach(r => { list.innerHTML += `<div class="room-item hover-target"><div>${r.isLocked?'<span style="background:var(--accent-blood);">LOCKED</span>':'<span style="background:var(--accent-acid); color:#000;">OPEN</span>'} <strong>${r.id}</strong></div><button class="brutal-btn hover-target" style="padding:0.5rem;" onclick="joinRoom('${r.id}', ${r.isLocked})">DOŁĄCZ</button></div>`; });
+            });
+            socket.on('roomCreated', (r) => { myRoomId = r.id; document.getElementById('lobby-ui').style.display='none'; document.getElementById('game-arena').style.display='block'; document.getElementById('arena-room-id').innerText=r.id; });
+            socket.on('gameStarted', (r) => { document.getElementById('lobby-ui').style.display='none'; document.getElementById('game-arena').style.display='block'; document.getElementById('arena-room-id').innerText=r.id; document.getElementById('game-controls').style.display='block'; if (isHost) { document.getElementById('host-view').style.display='block'; } else { myRoomId = r.id; } });
+            socket.on('searchResults', (v) => { const c = isHost?document.getElementById('yt-search-results-host'):document.getElementById('yt-search-results-guesser'); c.innerHTML=''; v.forEach(vid => { c.innerHTML += `<div class="yt-result-item hover-target" onclick="${isHost?`selectAndSubmitTrack('${vid.id}','${vid.title.replace(/'/g,"\\'")}')`:`selectGuessTrack('${vid.id}','${vid.title.replace(/'/g,"\\'")}')`}"><img src="${vid.thumb}" style="width:100px;"><div>${vid.title}</div></div>`; }); });
+            socket.on('trackPlaying', (r) => { if(!isHost) { document.getElementById('guesser-view').style.display='block'; if(ytPlayerBattle){ytPlayerBattle.loadVideoById(r.currentTrack);ytPlayerBattle.pauseVideo();document.getElementById('btn-play-audio').disabled=false;}else{ytPlayerBattle = new YT.Player('yt-player',{height:'100%',width:'100%',videoId:r.currentTrack,events:{'onReady':()=>{document.getElementById('btn-play-audio').disabled=false;}}});} } else { document.getElementById('host-view').style.display='none'; } });
+            socket.on('gameOver', (d) => { clearInterval(scoreInterval); clearInterval(guessInterval); if(ytPlayerBattle) ytPlayerBattle.stopVideo(); alert(d.msg); location.reload(); });
+        }
+        function searchYouTube(role) { socket.emit('searchTrack', document.getElementById(role==='host'?'yt-search-input':'guess-search-input').value); }
+        function selectAndSubmitTrack(id, title) { socket.emit('submitTrack', { roomId: myRoomId, ytId: id, title: title }); document.getElementById('yt-search-results-host').innerHTML = '<h3>WYSŁANE!</h3>'; }
+        function selectGuessTrack(id, title) { clearInterval(guessInterval); socket.emit('makeGuess', { roomId: myRoomId, ytId: id, title: title, points: points }); }
+        function startListening() { document.getElementById('btn-play-audio').style.display='none'; document.getElementById('btn-stop-audio').style.display='block'; ytPlayerBattle.playVideo(); scoreInterval=setInterval(()=>{points-=50;document.getElementById('points-val').innerText=points;if(points<=500)stopAndGuess();},1000); }
+        function stopAndGuess() { clearInterval(scoreInterval); ytPlayerBattle.pauseVideo(); document.getElementById('btn-stop-audio').style.display='none'; document.getElementById('guess-form').style.display='block'; guessInterval=setInterval(()=>{guessTime--;document.getElementById('countdown-val').innerText=guessTime;if(guessTime<=0){clearInterval(guessInterval);socket.emit('makeGuess',{roomId:myRoomId,guess:"timeout"});}},1000); }
+        function notifyTyping() { socket.emit('updateStatus', { roomId: myRoomId, msg: `Rywal pisze... (${guessTime}s)` }); }
+
+        loadDatabase();
+    </script>
+</body>
+</html>
