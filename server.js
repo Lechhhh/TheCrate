@@ -5,6 +5,8 @@ const { Server } = require('socket.io');
 const path = require('path');
 const fs = require('fs');
 const ytSearch = require('yt-search');
+const nodemailer = require('nodemailer'); 
+const crypto = require('crypto'); 
 
 const app = express();
 const server = http.createServer(app);
@@ -12,7 +14,20 @@ const io = new Server(server);
 const dbPath = path.join(__dirname, 'database.json');
 const usersPath = path.join(__dirname, 'users.json');
 
-// BEZPIECZNE FUNKCJE ODCZYTU
+// ==========================================
+// KONFIGURACJA WYSYŁKI E-MAIL (WPISZ SWOJE DANE!)
+// ==========================================
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'thecrate.kontakt@gmail.com', // <--- TUTAJ WPISZ SWÓJ E-MAIL GMAIL
+        pass: 'ybzkosxsqtulgowb' // <--- TUTAJ WKLEJ HASŁO APLIKACJI Z GOOGLE (bez spacji)
+    }
+});
+
+// ==========================================
+// BEZPIECZNE FUNKCJE ODCZYTU (ELIMINUJĄ BŁĄD JSON!)
+// ==========================================
 function safeReadDB() {
     try {
         if (!fs.existsSync(dbPath)) return JSON.parse(JSON.stringify(defaultDB));
@@ -38,15 +53,12 @@ function safeReadUsers() {
 
 if (!fs.existsSync(usersPath)) fs.writeFileSync(usersPath, '{}', 'utf8');
 
-// ==========================================
-// GIGANTYCZNA BAZA 40 ARTYKUŁÓW 
-// ==========================================
 const defaultDB = {
   "art_01": { "category": "archive", "region": "US", "timestamp": 1608940800000, "title": "Playboi Carti: Whole Lotta Red", "snippet": "Album, który zmienił brzmienie trapu na całą dekadę.", "content": "<p>Gdy Whole Lotta Red wychodziło pod koniec 2020 roku, internet tego nie zrozumiał. Pierwsze reakcje były mieszane, a wielu fanów odrzuciło nowe, agresywne brzmienie. Płyta wydawała się chaotyczna, krzyczana i źle zmiksowana. Dziś wiemy, że był to ogromny błąd, a sam projekt to kamień milowy w rozwoju gatunku.</p><p>Carti wprowadził punkową estetykę i przesterowane bity F1lthy'ego do absolutnego mainstreamu, tworząc podwaliny pod gigantyczną subkulturę Opium. Nikt nie był gotowy na wokalne eksperymenty, które zaprezentował. Dzisiaj te utwory powodują trzęsienia ziemi na festiwalach.</p><br><p class='source-tag'>Źródło: Opracowanie własne The Crate</p>", "searchTags": "playboi carti wlr opium", "likes": 124, "dislikes": 3, "comments": [] },
   "art_02": { "category": "archive", "region": "PL", "timestamp": 1598918400000, "title": "Taco Hemingway: Jarmark i Europa", "snippet": "Dwie płyty, jeden dzień, miliony streamów. Taco zatrzymuje polski internet.", "content": "<p>Taco zamknął rok 2020 uderzając ze zdwojoną siłą. Wydanie dwóch pełnoprawnych projektów naraz na moment dosłownie zablokowało serwery w Polsce. 'Jarmark' uderzał w polityczno-społeczne struny polskiej rzeczywistości, bezlitośnie punktując narodowe przywary. Z kolei 'Europa' skupiała się na bardziej osobistych i popkulturowych przemyśleniach.</p><p>Tym ruchem Taco udowodnił, że w kwestii storytellingu i zdolności do kreowania masowych fenomenów muzycznych, nie ma sobie równych na polskiej scenie. Zrobił to bez grama promocji, bez wywiadów i bez sztucznego pompowania oczekiwań.</p><br><p class='source-tag'>Źródło: 2020 Label</p>", "searchTags": "taco hemingway jarmark", "likes": 89, "dislikes": 2, "comments": [] },
   "art_03": { "category": "archive", "region": "US", "timestamp": 1688169600000, "title": "Travis Scott powraca z UTOPIĄ", "snippet": "Monumentalne dzieło zrzucające klątwę Astroworld.", "content": "<p>Po latach ciszy spowodowanej tragedią, Travis Scott powrócił z monumentalnym projektem 'Utopia'. Płyta ta to odważny krok w stronę awangardowego, brudnego brzmienia zdominowanego przez mroczne syntezatory i gęste bębny, silnie inspirowane epoką 'Yeezusa'. Album udowodnił, że Travis nie boi się ryzyka i potrafi wyznaczać nowe ścieżki w architekturze dźwięku.</p><p>Trasa koncertowa 'Circus Maximus' potwierdziła, że artysta nie ma sobie równych pod kątem wizualnym i scenicznym. Rzymskie Colosseum, gigantyczne głośniki i gościnne występy absolutnej topki potwierdziły jego status władcy rapgry.</p><br><p class='source-tag'>Źródło: Cactus Jack</p>", "searchTags": "travis scott utopia", "likes": 210, "dislikes": 5, "comments": [] },
   "art_04": { "category": "archive", "region": "PL", "timestamp": 1654041600000, "title": "White 2115 i rockstarowy sen", "snippet": "Jak Młody Łajcior połączył trap ze statusem gwiazdy rocka.", "content": "<p>White 2115 to fenomen, który udowodnił, że nie trzeba być klasycznym raperem, by zdominować listy przebojów w Polsce. Jego wokalne przeloty, mocno przesiąknięte melancholią, złamanym sercem i typowo wakacyjnym vibem, stały się oficjalną ścieżką dźwiękową polskiej młodzieży.</p><p>Jego projekty regularnie pokrywają się diamentem, udowadniając, że muzyka gitarowa w połączeniu z ciężkimi trapowymi bębnami to sprawdzony przepis na komercyjny triumf. Mimo krytyki ze strony purystów, White robi swoje i wypełnia największe festiwalowe hale w kraju po brzegi.</p><br><p class='source-tag'>Źródło: SBM Label / Popkiller</p>", "searchTags": "white 2115 sbm rockstar", "likes": 45, "dislikes": 12, "comments": [] },
-  "art_05": { "category": "archive", "region": "PL", "timestamp": 1717200000000, "title": "Oki i fenomen Ery 47", "snippet": "Od podziemnych bitew po wyprzedane hale.", "content": "<p>Oki wdarł się na szczyt polskiej branży z bezkompromisowym projektem 'Era 47'. Jego hiperaktywne flow, charyzma i techniczna perfekcja sprawiły, że to wydawnictwo stało się czymś więcej niż tylko zbiorem piosenek - to pełnoprawny ruch kulturowy. Ubrania sygnowane jeżem i numerem 47 zalały polskie ulice.</p><p>Jego monumentalna trasa koncertowa udowodniła sceptykom, że hip-hop w Polsce ostatecznie przeniósł się z małych, ciasnych klubów na gigantyczne areny i stadiony. Jako showman, Oki aktualnie nie ma sobie równych na polskiej scenie live.</p><br><p class='source-tag'>Źródło: Opracowanie własne</p>", "searchTags": "oki era 47", "likes": 88, "dislikes": 3, "comments": [] },
+  "art_05": { "category": "archive", "region": "PL", "timestamp": 1717200000000, "title": "Oki i fenomen Ery 47", "snippet": "Od podziemnych bitew po wyprzedane hale.", "content": "<p>Oki wdarł się na szczyt polskiej branży z bezkompromisowym projektem 'Era 47'. Jego hiperaktywne flow, charyzma i techniczna perfekcja sprawiły, że to wydawnictwo stało się czymś więcej niż tylko zbiorem piosenek - to pełnoprawny ruch kulturowy. Ubrania sygnowane jeżem i numerem 47 zalały polskie ulice.</p><p>Jego monumentalna trasa koncertowa udowodniła sceptykom, że hip-hop w Polsce ostatecznie przeniósł się z małych, ciasnych klubów na gigantyczne areny i stadiony. Jako showman, Oki aktualnie nie ma sobie równych na polskiej scenie live, łącząc energię moshpitu z precyzją sceniczną.</p><br><p class='source-tag'>Źródło: Opracowanie własne</p>", "searchTags": "oki era 47", "likes": 88, "dislikes": 3, "comments": [] },
   "art_06": { "category": "archive", "region": "US", "timestamp": 1714521600000, "title": "Kendrick Lamar vs Drake: Upadek Imperium", "snippet": "Analiza największego beefu tej dekady.", "content": "<p>Wiosna 2024 roku zmieniła hip-hop na zawsze. Beef, który kiełkował od dekady, ostatecznie eksplodował z nuklearną siłą. Kendrick Lamar nie tylko wygrał starcie pod kątem lirycznym, ale przeprowadził metodyczną, publiczną egzekucję wizerunku Drake'a, punktując wszystkie jego słabości i mechanizmy działania wytwórni OVO.</p><p>Utwór 'Not Like Us' stał się absolutnym hymnem ulicznym w USA. Był grany w klubach, na meczach NBA i w samochodach, udowadniając, że klasyczny, oparty na wartościach hip-hop potrafi pobić pop-rap ich własną, najbardziej komercyjną bronią.</p><br><p class='source-tag'>Źródło: RapNews USA / Complex</p>", "searchTags": "kendrick drake beef", "likes": 305, "dislikes": 18, "comments": [] },
   "art_07": { "category": "archive", "region": "US", "timestamp": 1696118400000, "title": "Ken Carson - A Great Chaos", "snippet": "Płyta, która zdefiniowała brzmienie nowożytnego moshpitu.", "content": "<p>Ken Carson udowodnił albumem 'A Great Chaos', że nie jest tylko przystawką do Playboi Cartiego. AGC to potężna ściana dźwięku. Przesterowane, wgniatające w ziemię basy, krzykliwe wokale i tempo, które nie pozwala słuchaczowi złapać oddechu nawet na chwilę.</p><p>Koncerty z tą płytą to czyste, niebezpieczne szaleństwo. Ten album wyznaczył zupełnie nowe standardy ciężkości dla całego amerykańskiego podziemia, a producenci wspięli się tu na absolutne wyżyny swoich mrocznych możliwości.</p><br><p class='source-tag'>Źródło: Opium Label</p>", "searchTags": "ken carson agc", "likes": 120, "dislikes": 4, "comments": [] },
   "art_08": { "category": "archive", "region": "US", "timestamp": 1706745600000, "title": "Yeat wkracza w rok 2093", "snippet": "Koniec z dzwoneczkami. Raper ewoluuje w stronę mrocznego cyberpunku.", "content": "<p>Yeat całkowicie odciął się od swojego dawnego brzmienia z ery 'Up 2 Më'. Płyta '2093' to monumentalne, dystopijne przedsięwzięcie, pełne ciężkich, industrialnych syntezatorów, zniekształconych wokali i mrocznego klimatu rodem z filmów science-fiction.</p><p>Udowodnił tym samym, że nie jest tylko TikTokową ciekawostką, która zniknie po jednym sezonie, ale artystą z prawdziwą, wielką wizją, który potrafi ewoluować szybciej, niż branża jest w stanie to przetrawić.</p><br><p class='source-tag'>Źródło: Lyfestyle Corporation</p>", "searchTags": "yeat 2093", "likes": 110, "dislikes": 14, "comments": [] },
@@ -75,6 +87,14 @@ const defaultDB = {
 };
 
 app.use(express.json()); 
+app.use((err, req, res, next) => {
+    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+        console.error("Zablokowano uszkodzony JSON z żądania.");
+        return res.status(400).send({ success: false, msg: 'Błąd danych JSON' });
+    }
+    next();
+});
+
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 app.get('/api/articles', (req, res) => {
@@ -86,6 +106,7 @@ app.get('/api/articles', (req, res) => {
     res.json(dbData);
 });
 
+// ZARZĄDZANIE LAJKAMI I KOMENTARZAMI
 app.post('/api/article/:id/vote', (req, res) => {
     const { type } = req.body; 
     let db = safeReadDB();
@@ -110,25 +131,106 @@ app.post('/api/article/:id/comment', (req, res) => {
     } else res.json({ success: false });
 });
 
+// LOGOWANIE, REJESTRACJA I PROFIL
 app.post('/api/register', (req, res) => {
     const { email, username, password } = req.body;
     let users = safeReadUsers();
+    
     if (users[username]) return res.json({ success: false, msg: "Ten Nick jest już zajęty!" });
     if (Object.values(users).some(u => u.email === email)) return res.json({ success: false, msg: "E-mail w użyciu!" });
-    users[username] = { email, password, points: 0, avatar: "", bio: "", socials: { ig: "", sc: "", yt: "", sp: "" }, isVerified: false };
+
+    // Tworzymy unikalny token do linku aktywacyjnego
+    const verificationToken = crypto.randomBytes(20).toString('hex');
+
+    users[username] = { 
+        email, password, points: 0, avatar: "", bio: "", socials: { ig: "", sc: "", yt: "", sp: "" }, 
+        isVerified: false, 
+        verificationToken: verificationToken // Zapisujemy token do bazy
+    };
     fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
-    res.json({ success: true, msg: "Zarejestrowano! Wysłano link aktywacyjny." });
+
+    // Dynamiczny adres strony
+    const host = req.get('host');
+    const protocol = req.protocol;
+    const verifyLink = `${protocol}://${host}/api/verify-email?token=${verificationToken}&user=${username}`;
+
+    // Konstruowanie pierwszego maila (Aktywacja)
+    const mailOptions = {
+        from: '"THE CRATE." <twoj.mail@gmail.com>', // <--- TUTAJ TEŻ WPISZ SWÓJ E-MAIL
+        to: email,
+        subject: 'Witaj w podziemiu! Aktywuj konto na THE CRATE.',
+        html: `
+            <div style="background-color: #0f0e0d; color: #e2dcd0; padding: 30px; font-family: sans-serif; text-align: center; border: 2px solid #dbff00;">
+                <h1 style="color: #e5383b; text-transform: uppercase;">THE CRATE.</h1>
+                <h2 style="color: #dbff00;">Siema ${username}!</h2>
+                <p style="font-size: 16px;">Twoje konto zostało pomyślnie utworzone. Aby móc zdobywać punkty w Aux Battle i komentować najświeższe leaki, musisz potwierdzić swój adres e-mail.</p>
+                <a href="${verifyLink}" style="background-color: #dbff00; color: #000; padding: 15px 30px; text-decoration: none; font-weight: bold; font-size: 18px; display: inline-block; margin-top: 20px; border-radius: 5px;">AKTYWUJ KONTO</a>
+                <p style="margin-top: 30px; opacity: 0.5; font-size: 12px;">Jeśli to nie Ty zakładałeś konto, zignoruj tę wiadomość.</p>
+            </div>
+        `
+    };
+
+    // Wysyłanie maila
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log("Błąd wysyłki maila: ", error);
+            return res.json({ success: true, msg: "Konto utworzone, ale wystąpił błąd z wysyłką linku aktywacyjnego." });
+        }
+        res.json({ success: true, msg: "Zarejestrowano! Sprawdź swoją skrzynkę pocztową, aby aktywować konto." });
+    });
 });
 
-app.post('/api/verify', (req, res) => {
-    const { username } = req.body; 
+// ==========================================
+// ENDPOINT: ODBIERANIE KLIKNIĘCIA Z MAILA I WYSYŁKA POWITANIA
+// ==========================================
+app.get('/api/verify-email', (req, res) => {
+    const { token, user } = req.query;
     let users = safeReadUsers();
-    if (users[username]) { 
-        users[username].isVerified = true; 
-        fs.writeFileSync(usersPath, JSON.stringify(users, null, 2)); 
-        return res.json({ success: true, msg: "Konto aktywowane!" }); 
+
+    if (users[user] && users[user].verificationToken === token) {
+        // Aktywacja konta i czyszczenie tokenu
+        users[user].isVerified = true;
+        users[user].verificationToken = null; 
+        fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
+
+        const host = req.get('host');
+        const protocol = req.protocol;
+        
+        // NOWOŚĆ: Automatyczna wysyłka drugiego maila (Potwierdzenie Aktywacji)
+        const welcomeMailOptions = {
+            from: '"THE CRATE." <twoj.mail@gmail.com>', // <--- TUTAJ TEŻ WPISZ SWÓJ E-MAIL
+            to: users[user].email,
+            subject: 'Konto aktywowane! Witamy w THE CRATE.',
+            html: `
+                <div style="background-color: #0f0e0d; color: #e2dcd0; padding: 30px; font-family: sans-serif; text-align: center; border: 2px solid #dbff00;">
+                    <h1 style="color: #e5383b; text-transform: uppercase;">THE CRATE.</h1>
+                    <h2 style="color: #dbff00;">Konto aktywowane pomyślnie!</h2>
+                    <p style="font-size: 16px;">Twoje konto o nazwie <b>${user}</b> jest już w pełni aktywne na naszej stronie. Możesz się teraz zalogować, dyskutować z innymi i brać udział w pojedynkach Aux Battle.</p>
+                    <a href="${protocol}://${host}" style="background-color: #dbff00; color: #000; padding: 15px 30px; text-decoration: none; font-weight: bold; font-size: 18px; display: inline-block; margin-top: 20px; border-radius: 5px;">WEJDŹ NA STRONĘ</a>
+                </div>
+            `
+        };
+
+        // Wysyłamy w tle, bez blokowania strony dla użytkownika
+        transporter.sendMail(welcomeMailOptions).catch(err => console.log("Błąd wysyłki maila powitalnego: ", err));
+        
+        // Wyświetlenie komunikatu w przeglądarce i przekierowanie na stronę
+        res.send(`
+            <body style="background:#0f0e0d; color:#dbff00; font-family:sans-serif; text-align:center; padding-top:100px;">
+                <h1 style="font-size:40px;">KONTO ZWERYFIKOWANE!</h1>
+                <p style="color:#e2dcd0; font-size:20px;">Możesz się teraz zalogować w systemie THE CRATE.</p>
+                <a href="/" style="display:inline-block; margin-top:30px; background:#e5383b; color:#fff; padding:15px 30px; text-decoration:none; font-weight:bold; text-transform:uppercase;">WRÓĆ NA STRONĘ GŁÓWNĄ</a>
+            </body>
+        `);
+    } else {
+        res.send(`
+            <body style="background:#0f0e0d; color:#e5383b; font-family:sans-serif; text-align:center; padding-top:100px;">
+                <h1 style="font-size:40px;">BŁĄD WERYFIKACJI</h1>
+                <p style="color:#e2dcd0; font-size:20px;">Link aktywacyjny jest nieważny lub konto zostało już aktywowane.</p>
+                <a href="/" style="display:inline-block; margin-top:30px; background:#dbff00; color:#000; padding:15px 30px; text-decoration:none; font-weight:bold; text-transform:uppercase;">WRÓĆ NA STRONĘ GŁÓWNĄ</a>
+            </body>
+        `);
     }
-    res.json({ success: false });
 });
 
 app.post('/api/login', (req, res) => {
@@ -136,11 +238,11 @@ app.post('/api/login', (req, res) => {
     let users = safeReadUsers();
     for (const [nick, data] of Object.entries(users)) {
         if ((nick === login || data.email === login) && data.password === password) {
-            if(!data.isVerified) return res.json({ success: false, msg: "Konto nieaktywowane!" });
+            if(!data.isVerified) return res.json({ success: false, msg: "Konto nie zostało aktywowane! Sprawdź pocztę e-mail." });
             return res.json({ success: true, msg: "Zalogowano!", user: { username: nick, ...data } });
         }
     }
-    res.json({ success: false, msg: "Błędne dane!" });
+    res.json({ success: false, msg: "Błędne dane logowania!" });
 });
 
 app.post('/api/profile', (req, res) => {
@@ -214,7 +316,7 @@ io.on('connection', (socket) => {
 });
 
 // ==========================================
-// AUTODIGGER AI - BEZPIECZNE GENEROWANIE NEWSÓW
+// AUTODIGGER AI - BEZPIECZNE GENEROWANIE NEWSÓW W TLE
 // ==========================================
 const fallbackBank = [
     { title: "Future & Metro Boomin - Złota Era Trapu", snippet: "Duet, który nie potrafi nagrać słabego utworu.", content: "<p>Kiedy Metro Boomin robi bity, a Future wchodzi do kabiny, dzieje się magia. Ich projekty to absolutna esencja atlantskiego trapu, od mrocznych syntezatorów po lodowate flow Plutona.</p><p>Każdy wyciek z ich sesji nagraniowych to natychmiastowy hit w podziemiu. Future udowadnia, że wciąż potrafi wyznaczać nowe standardy toksycznego brzmienia R&B.</p><p>To niesamowite, jak ich chemia ewoluowała od czasów 'Monster'. Żaden inny duet w rapie nie ma takiej powtarzalności w dostarczaniu hitów.</p><br><p class='source-tag'>Źródło: The Crate</p>", searchQuery: "Future official music video", isLeak: false, artist: "Future" }
@@ -231,9 +333,16 @@ async function runAutoDigger() {
 
         let aiText = await callSmartAI(sysPrompt, usrPrompt);
         const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+        
         if(jsonMatch) {
-            const parsed = JSON.parse(jsonMatch[0]);
-            if (parsed.title && parsed.content.length > 200) articleData = parsed;
+            try {
+                const parsed = JSON.parse(jsonMatch[0]);
+                if (parsed.title && parsed.content.length > 200) {
+                    articleData = parsed;
+                }
+            } catch(parseErr) {
+                console.log("[AUTODIGGER] AI wygenerowało uszkodzony JSON, przerywam...");
+            }
         }
     } catch(e) {}
 
@@ -271,6 +380,6 @@ async function runAutoDigger() {
     } catch(e) {}
 }
 
-setTimeout(runAutoDigger, 15000); setInterval(runAutoDigger, 200000);
+setTimeout(runAutoDigger, 15000); setInterval(runAutoDigger, 300000);
 const PORT = 3000;
 server.listen(PORT, () => console.log(`[THE CRATE] System Online (Port: ${PORT}).`));

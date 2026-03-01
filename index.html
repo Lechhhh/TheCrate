@@ -20,16 +20,12 @@
             --purple: #7b2cbf; 
         }
 
-        /* ========================================================= */
-        /* SKALOWANIE DLA PC (Idealne oddalenie 90%) */
-        /* ========================================================= */
+        /* SKALOWANIE DLA PC (zgodnie z życzeniem: 85%) */
         @media (min-width: 1000px) {
             html { font-size: 85%; }
         }
         
-        * { 
-            box-sizing: border-box; 
-        }
+        * { box-sizing: border-box; }
         
         body { 
             background: var(--bg); 
@@ -50,10 +46,11 @@
         /* ========================================================= */
         @media (hover: hover) and (pointer: fine) {
             body, a, button, h1, h2, h3, p, div, span { cursor: none !important; }
-            input, textarea { cursor: text !important; }
+            input, textarea { cursor: text !important; } /* W polach tekstowych normalny kursor pisania */
         }
         
         @media (hover: none), (pointer: coarse) {
+            /* Na ekranach dotykowych całkowicie usuwamy czerwoną kulkę i przywracamy dotyk */
             .custom-cursor { display: none !important; }
             * { cursor: auto !important; }
         }
@@ -142,7 +139,7 @@
         .view-section.active { display: block; }
         @keyframes fadeIn { from {opacity: 0; transform: translateY(10px);} to {opacity: 1; transform: translateY(0);} }
 
-        /* KAFELKI */
+        /* KAFELKI Z DATAMI */
         .bento-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2rem; }
         .card { 
             background: var(--paper); 
@@ -167,46 +164,16 @@
         .tag { font-family: 'Syne'; font-size: 0.75rem; font-weight: 800; background: var(--bg); color: var(--paper); padding: 0.3rem 0.6rem; display: inline-block; margin-bottom: 10px;}
         .card-hottest .tag { background: var(--bg); color: var(--acid); }
         
-        /* ========================================================= */
-        /* DATA NA KAFELKU - W PEŁNI WIDOCZNA! */
-        /* ========================================================= */
-        .date-tag { 
-            font-family: 'Syne'; 
-            font-size: 0.75rem; 
-            font-weight: 800; 
-            background: transparent; 
-            border: 2px solid #000; 
-            color: #000; 
-            padding: 0.25rem 0.5rem; 
-            display: inline-block; 
-            margin-bottom: 10px; 
-            text-transform: uppercase;
-        }
+        /* DATA NA KAFELKU */
+        .date-tag { font-family: 'Syne'; font-size: 0.75rem; font-weight: 800; background: transparent; border: 2px solid #000; color: #000; padding: 0.25rem 0.5rem; display: inline-block; margin-bottom: 10px; text-transform: uppercase;}
         .card-hottest .date-tag { border-color: #fff; color: #fff; border-width: 1px;}
 
         /* SLIDER ARCHIWUM */
-        .carousel-viewport { 
-            overflow: hidden; 
-            width: 100%; 
-            position: relative; 
-        }
+        .carousel-viewport { overflow: hidden; width: 100%; position: relative; }
+        .carousel-track { display: flex; transition: transform 0.6s cubic-bezier(0.85, 0, 0.15, 1); width: 100%;}
+        .carousel-slide { width: 100%; flex-shrink: 0; box-sizing: border-box; padding-bottom: 2rem;}
         
-        .carousel-track { 
-            display: flex; 
-            transition: transform 0.6s cubic-bezier(0.85, 0, 0.15, 1); 
-            width: 100%;
-        }
-        
-        .carousel-slide { 
-            width: 100%; 
-            flex-shrink: 0; 
-            box-sizing: border-box;
-            padding-bottom: 2rem;
-        }
-        
-        .carousel-controls-top { display: flex; gap: 15px; margin-bottom: 2rem; }
-
-        /* IDEALNIE CZYTELNY ARTYKUŁ (Duża czcionka Zilla) */
+        /* IDEALNIE CZYTELNY ARTYKUŁ */
         #article-content { max-width: 900px; margin: 0 auto; padding-bottom: 5vh;}
         #article-content h1 { font-family: 'Syne', sans-serif; font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 0.9; margin-bottom: 2rem; word-break: break-word; color: var(--paper);}
         #article-content p { font-family: 'Zilla Slab', serif; font-weight: 400; font-size: 1.5rem; line-height: 1.8; margin-bottom: 2rem; text-align: left; color: #e2dcd0;}
@@ -260,13 +227,24 @@
         .ai-messages { flex: 1; overflow-y: auto; padding: 1.5rem; font-size: 1rem; display: flex; flex-direction: column; gap: 1rem; border-bottom: 1px solid var(--acid);}
         .ai-input { width: 100%; background: transparent; border: none; padding: 1.5rem; color: var(--acid); font-family: 'Zilla Slab'; font-size: 1.1rem; outline: none; }
         
-        /* Animacja pisania AI */
         .ai-typing-blink { animation: blinker 1s linear infinite; }
         @keyframes blinker { 50% { opacity: 0.3; } }
 
         /* ========================================================= */
-        /* RESPONSYWNOŚĆ (TELEFONY I TABLETY) */
+        /* RESPONSYWNOŚĆ (TELEFONY I TABLETY) ORAZ MODAL REJESTRACJI */
         /* ========================================================= */
+        
+        /* Responsywny modal rejestracji */
+        #reg-success-modal > div {
+            padding: clamp(1.5rem, 5vw, 3rem);
+        }
+        #reg-success-modal h2 {
+            font-size: clamp(1.8rem, 6vw, 2.5rem);
+        }
+        #reg-success-modal p {
+            font-size: clamp(1rem, 4vw, 1.3rem);
+        }
+
         @media (max-width: 1000px) { 
             .grid-2 { grid-template-columns: 1fr; } 
             .card { grid-column: span 12; } 
@@ -302,10 +280,15 @@
     <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#noiseFilter)"/></svg>
     <div class="custom-cursor" id="cursor"></div>
 
-    <div id="email-verify-box" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--paper); color:#000; padding:1.2rem; border:4px solid var(--purple); z-index:99999; text-align:center; box-shadow: 10px 10px 0 #000;">
-        <h3 style="margin-top:0;">WERYFIKACJA E-MAIL</h3>
-        <p>Wysłano link weryfikacyjny na Twój adres e-mail.</p>
-        <button class="btn hover-target" id="sim-verify-btn" style="background:var(--purple); color:#fff; margin-top:10px;">[SYMULUJ KLIKNIĘCIE W LINK]</button>
+    <div id="reg-success-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,14,13,0.9); z-index:100000; justify-content:center; align-items:center;">
+        <div style="background:var(--paper); color:#000; border:4px solid var(--purple); text-align:center; max-width:500px; margin: 0 20px; box-shadow: 10px 10px 0 rgba(0,0,0,0.5);">
+            <h2 style="font-family:'Syne'; color:var(--purple); margin-top:0;">KONTO UTWORZONE!</h2>
+            <p style="font-family:'Zilla Slab'; font-weight:bold; margin-bottom: 2rem;">
+                Wysłaliśmy link aktywacyjny na Twój adres e-mail.<br><br>
+                Sprawdź skrzynkę (oraz folder SPAM) i kliknij "AKTYWUJ KONTO", aby móc się zalogować i wejść do gry.
+            </p>
+            <button class="btn hover-target" style="background:var(--purple); color:#fff; font-size: 1.2rem;" onclick="document.getElementById('reg-success-modal').style.display='none'">ZROZUMIANO</button>
+        </div>
     </div>
 
     <div id="live-alert">
@@ -541,7 +524,6 @@
             cursor.style.top = cY + 'px'; 
             requestAnimationFrame(loop); 
         } 
-        
         loop();
         
         document.body.addEventListener('mouseover', e => { 
@@ -574,7 +556,6 @@
 
         // ================= NAWIGACJA Z PAMIĘCIĄ =================
         function navigate(id) {
-            // Zamykamy menu po kliknięciu linku na telefonie
             const nav = document.getElementById('nav-links');
             if (nav && nav.classList.contains('open')) {
                 nav.classList.remove('open');
@@ -661,6 +642,9 @@
                 return msg.innerText = "Błąd: Hasło musi mieć min. 7 znaków i 1 znak specjalny!";
             }
             
+            msg.style.color = "var(--paper)";
+            msg.innerText = "Wysyłanie maila... proszę czekać.";
+            
             const r = await fetch('/api/register', { 
                 method:'POST', 
                 headers:{'Content-Type':'application/json'}, 
@@ -669,10 +653,15 @@
             const d = await r.json(); 
             
             if(d.success) {
-                msg.style.color = "var(--acid)";
-                document.getElementById('email-verify-box').style.display = 'block';
-                document.getElementById('sim-verify-btn').onclick = () => verifyEmail(nick);
-                msg.innerText = d.msg;
+                // CZYSZCZENIE PÓL FORMULARZA
+                document.getElementById('reg-email').value = '';
+                document.getElementById('reg-nick').value = '';
+                document.getElementById('reg-pass1').value = '';
+                document.getElementById('reg-pass2').value = '';
+                msg.innerText = ''; 
+                
+                // WYŚWIETLENIE DUŻEGO ALERTY
+                document.getElementById('reg-success-modal').style.display = 'flex';
             } else {
                 msg.style.color = "var(--blood)";
                 msg.innerText = d.msg;
@@ -1010,9 +999,7 @@
         let deckBId = null; 
         let isMixerPlaying = false;
         
-        function onYouTubeIframeAPIReady() { 
-            ytAPIReady = true; 
-        }
+        function onYouTubeIframeAPIReady() { ytAPIReady = true; }
         
         socket.on('searchResultsMixer', (d) => {
             const container = document.getElementById('res' + d.deck); 
