@@ -15,16 +15,16 @@ const dbPath = path.join(__dirname, 'database.json');
 const usersPath = path.join(__dirname, 'users.json');
 
 // ==========================================
-// KONFIGURACJA WYSYŁKI E-MAIL (WPISZ SWOJE DANE!)
+// KONFIGURACJA WYSYŁKI E-MAIL (ZMIENIONY PORT DLA RENDER.COM)
 // ==========================================
-
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // Wymusza szyfrowanie (ważne dla serwerów w chmurze)
+    port: 587,
+    secure: false, // Ważne: dla portu 587 to MUSI być false
+    requireTLS: true, // Wymuszamy szyfrowanie w inny sposób
     auth: {
-        user: 'thecrate.kontakt@gmail.com', // Twój email
-        pass: 'ybzkosxsqtulgowb' // Hasło aplikacji z Google
+        user: 'thecrate.kontakt@gmail.com', // <--- Wpisz swój e-mail Gmail
+        pass: 'ybzkosxsqtulgowb' // <--- Wpisz hasło aplikacji z Google
     }
 });
 function safeReadDB() {
