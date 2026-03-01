@@ -653,24 +653,25 @@ async function runAutoDigger() {
     const isLeakGenerate = Math.random() > 0.6; 
 
     try {
-        const sysPrompt = `Jesteś profesjonalnym dziennikarzem rapowym portalu The Crate. Przeszukujesz internet w poszukiwaniu rapowych informacji - mogą to być najświeższe plotki z obecnego roku, ale też wspominki o legendarnych, starszych wyciekach (np. z ery WLR).
-        ZASADY:
-        1. Pisz w 100% poprawnym, potocznym językiem polskim. Absolutny zakaz używania dziwnych, zmyślonych słów (jak "zastrzębie", "odciążniki") i bezsensownych tłumaczeń slangu. Pisz zwięźle.
-        2. W polu "searchQuery" podaj dokładną frazę do wyszukiwarki YouTube dopasowaną do tematu tekstu. Jeśli artykuł jest o starym wycieku (np. z 2019/2020), podaj zapytanie, które znajdzie ten konkretny stary wyciek. Jeśli to absolutna nowość, dodaj aktualny rok (np. "2026 snippet").
-        3. W polu "leakType" musisz wpisać jedno z trzech słów: "LEAK" (jeśli piszesz o wycieku całej piosenki), "SNIPPET" (jeśli piszesz o krótkiej zapowiedzi), lub "NONE" (jeśli to ogólny news/ciekawostka).
-        4. Jeśli to zwykły artykuł (ciekawostka) i dodanie wideo zepsuje efekt lub nie ma odpowiedniego filmu, wpisz w "searchQuery" dokładnie słowo "NONE". Wtedy system nie doda żadnego wideo.
+        const sysPrompt = `Jesteś profesjonalnym dziennikarzem rapowym portalu The Crate. Przeszukujesz internet w poszukiwaniu rapowych informacji z obecnego roku.
+        ZASADY - MUSISZ ICH PRZESTRZEGAĆ:
+        1. Pisz BARDZO PROSTYM, 100% poprawnym i naturalnym językiem polskim. Zwięzłe zdania.
+        2. ABSOLUTNY ZAKAZ tworzenia dziwnych, zmyślonych słów (jak "wanikowka", "zastrzębie", "throttle", "inicjalizacji"). ZERO skomplikowanych metafor!
+        3. Jeśli piszesz o mało znanym raperze (np. Wane, Aleshen) i brakuje Ci o nim informacji, napisz po prostu BARDZO ZWYKŁY TEKST o tym, że "w sieci na platformie Discord pojawił się nowy, krótki fragment jego utworu i fani spekulują o nowej płycie". Nie wymyślaj sztucznego slangu.
+        4. W polu "searchQuery" podaj dokładną frazę do wyszukiwarki YouTube (np. "${randomArtist} 2026 snippet"). Jeśli nie chcesz dodawać wideo, wpisz dokładnie "NONE".
+        5. W polu "leakType" wpisz jedno ze słów: "LEAK", "SNIPPET", lub "NONE".
         ZWRÓĆ TYLKO I WYŁĄCZNIE CZYSTY JSON:
         {
-            "title": "Chwytliwy tytuł (max 7 słów)",
-            "snippet": "Krótka zajawka (1-2 zdania)",
-            "content": "<p>Twój poprawny językowo tekst...</p><br><p class='source-tag'>Źródło: Reddit / Discord</p>",
-            "searchQuery": "dokładna fraza wyszukiwania do YouTube",
+            "title": "Chwytliwy, prosty tytuł (max 6 słów)",
+            "snippet": "Krótka, zrozumiała zajawka (1 zdanie)",
+            "content": "<p>Twój naturalny i poprawny językowo tekst bez udziwnień...</p><br><p class='source-tag'>Źródło: RapNews / Discord</p>",
+            "searchQuery": "dokładna fraza do YouTube",
             "isLeak": ${isLeakGenerate},
             "leakType": "LEAK",
             "artist": "${randomArtist}"
         }`;
         
-        const usrPrompt = `Napisz artykuł (news lub info o legendarnym/nowym wycieku) o artyście: ${randomArtist}. Bądź kreatywny, uderz w styl profesjonalnego portalu. ZWRÓĆ TYLKO JSON.`;
+        const usrPrompt = `Napisz krótki, naturalny i sensowny artykuł (news lub info o wycieku) o artyście: ${randomArtist}. Pisz prostymi zdaniami. ZWRÓĆ TYLKO JSON.`;
 
         let aiText = await callSmartAI(sysPrompt, usrPrompt);
         const jsonMatch = aiText.match(/\{[\s\S]*\}/);
@@ -684,13 +685,13 @@ async function runAutoDigger() {
         }
     } catch(e) {}
 
-    // BEZPIECZNY FALLBACK
+    // BEZPIECZNY FALLBACK (Uruchomi się, jeśli AI mimo wszystko wygeneruje błąd)
     if(!articleData || !articleData.title || articleData.title.length < 3) {
         articleData = {
-            title: `${randomArtist} - Tajemnicze pliki w sieci`,
-            snippet: `Fani na Discordzie i Reddicie znowu odkopali tajemnicze pliki. Co planuje ${randomArtist}?`,
-            content: `<p>Ostatnie godziny w podziemnym internecie to istne szaleństwo. Na forach i ukrytych serwerach Discord masowo zaczęły pojawiać się paczki z rzekomymi brzmieniami. Fani ${randomArtist} prześcigają się w teoriach spiskowych.</p><p>Trudno w tym momencie jednoznacznie stwierdzić, czy mamy do czynienia z oficjalną kampanią marketingową. Sprawdzajcie podziemie.</p><br><p class='source-tag'>Źródło: RapNews / Discord</p>`,
-            searchQuery: `${randomArtist} leak`,
+            title: `${randomArtist} - Nowy materiał w sieci`,
+            snippet: `Fani na Discordzie znowu odkopali tajemnicze pliki audio. Co planuje ${randomArtist}?`,
+            content: `<p>Ostatnie godziny w podziemnym internecie to istne szaleństwo. Na ukrytych serwerach Discord masowo zaczęły pojawiać się paczki z nowymi brzmieniami. Fani artysty o pseudonimie ${randomArtist} prześcigają się w teoriach i wymieniają plikami.</p><p>Trudno w tym momencie jednoznacznie stwierdzić, czy mamy do czynienia z oficjalną kampanią marketingową, czy błędem w zabezpieczeniach. Sprawdzajcie podziemie i pilnujcie swoich playlist.</p><br><p class='source-tag'>Źródło: RapNews / Discord</p>`,
+            searchQuery: `${randomArtist} unreleased leak`,
             isLeak: true,
             leakType: "LEAK",
             artist: randomArtist
