@@ -5,411 +5,1120 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>THE CRATE</title>
     
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23e5383b%22/><text y=%2275%22 x=%2220%22 font-size=%2280%22 font-family=%22sans-serif%22 fill=%22%23121110%22>C</text></svg>">
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400..800&family=Zilla+Slab:ital,wght@0,300;0,600;1,300;1,600&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23e5383b%22/><text y=%2280%22 x=%2222%22 font-size=%2285%22 font-family=%22Arial, sans-serif%22 font-weight=%22normal%22 fill=%22%230f0e0d%22>C</text></svg>">
     
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;800;900&family=Zilla+Slab:wght@400;600&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
-
+    
     <style>
-        :root { --bg-deep: #0f0e0d; --bg-paper: #e2dcd0; --accent-blood: #e5383b; --accent-acid: #dbff00; --accent-purple: #7b2cbf; --font-display: 'Syne', sans-serif; --font-body: 'Zilla Slab', serif; --gap-weird: clamp(1.2rem, 2vw, 2rem); --ease-snap: cubic-bezier(0.85, 0, 0.15, 1); }
-        * { box-sizing: border-box; margin: 0; padding: 0; cursor: none; }
-        body { background-color: var(--bg-deep); color: var(--bg-paper); font-family: var(--font-body); overflow-x: hidden; line-height: 1.6; scroll-behavior: smooth; }
-        ::selection { background: var(--accent-acid); color: var(--bg-deep); }
-        #noise-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; opacity: 0.04; mix-blend-mode: overlay; }
+        :root { 
+            --bg: #0f0e0d; 
+            --paper: #e2dcd0; 
+            --blood: #e5383b; 
+            --acid: #dbff00; 
+            --purple: #7b2cbf; 
+        }
         
-        .custom-cursor { width: 14px; height: 14px; background: var(--accent-blood); border-radius: 50%; position: fixed; pointer-events: none; z-index: 999999; transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s, background 0.3s; mix-blend-mode: difference; }
-        .custom-cursor.hovering { width: 60px; height: 60px; background: var(--accent-acid); }
+        * { box-sizing: border-box; cursor: none; }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--paper); 
+            font-family: 'Zilla Slab', serif; 
+            margin: 0; 
+            padding-top: 80px; 
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4, .logo, .nav-links a { 
+            font-family: 'Syne', sans-serif; 
+            text-transform: uppercase; 
+        }
+        
+        /* KURSOR */
+        .custom-cursor { 
+            width: 14px; 
+            height: 14px; 
+            background: var(--blood); 
+            border-radius: 50%; 
+            position: fixed; 
+            pointer-events: none; 
+            z-index: 999999; 
+            transform: translate(-50%, -50%); 
+            transition: width 0.3s, height 0.3s, background 0.3s; 
+            mix-blend-mode: difference; 
+        }
+        
+        .custom-cursor.hovering { 
+            width: 60px; 
+            height: 60px; 
+            background: var(--acid); 
+        }
+        
+        #noise-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh; 
+            pointer-events: none; 
+            z-index: 9999; 
+            opacity: 0.04; 
+            mix-blend-mode: overlay; 
+        }
 
-        h1, h2, h3, h4 { font-family: var(--font-display); text-transform: uppercase; font-variation-settings: "wght" 800; line-height: 0.95; }
-        .nav-header { position: fixed; top: 0; left: 0; width: 100%; padding: 1.2rem 3vw; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; font-family: var(--font-display); font-weight: 800; z-index: 1000; background: var(--bg-deep); border-bottom: 2px solid rgba(226, 220, 208, 0.1); gap: 1rem; }
-        .nav-links { display: flex; flex-wrap: wrap; gap: 1.5rem; }
-        .nav-links a { color: var(--bg-paper); text-decoration: none; position: relative; font-size: clamp(0.9rem, 1.5vw, 1.1rem); transition: color 0.3s; }
-        .nav-links a:hover, .nav-links a.active { color: var(--accent-acid); }
+        .nav-header { 
+            position: fixed; 
+            top: 0; 
+            width: 100%; 
+            padding: 1rem 5vw; 
+            background: rgba(15,14,13,0.95); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            z-index: 1000; 
+            border-bottom: 2px solid rgba(255,255,255,0.1); 
+            backdrop-filter: blur(5px);
+        }
+        
+        .logo { font-size: 1.5rem; color: #fff; font-weight: 900;}
+        .nav-links { display: flex; gap: 1.5rem; align-items: center;}
+        .nav-links a { color: #fff; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: 0.3s;}
+        .nav-links a:hover { color: var(--acid); }
+        
+        .auth-status { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            background: var(--acid); 
+            color: #000; 
+            padding: 5px 15px; 
+            font-family: 'Syne'; 
+            font-weight: bold; 
+            font-size: 0.9rem; 
+            transition: 0.3s;
+        }
+        
+        .auth-status:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 4px 4px 0 var(--blood); 
+        }
+        
+        .nav-avatar { width: 30px; height: 30px; border-radius: 50%; background: #000; object-fit: cover; border: 2px solid #000;}
 
-        .view-section { display: none; opacity: 0; animation: fadeIn 0.4s forwards; padding-top: 18vh; min-height: 100vh; }
+        .view-section { display: none; padding: 2rem 5vw 10vh 5vw; min-height: 100vh; animation: fadeIn 0.4s; }
         .view-section.active { display: block; }
-        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } from { opacity: 0; transform: translateY(10px); } }
+        @keyframes fadeIn { from {opacity: 0; transform: translateY(10px);} to {opacity: 1; transform: translateY(0);} }
 
-        .bento-container { padding: 0 4vw 10vh 5vw; display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap-weird); grid-auto-flow: dense; }
-        .bento-card { background: var(--bg-paper); color: var(--bg-deep); padding: 2rem; position: relative; transition: all 0.4s var(--ease-snap); border: 2px solid var(--bg-deep); display: flex; flex-direction: column; box-shadow: 6px 6px 0px rgba(229, 56, 59, 0.2); overflow: hidden; }
-        .bento-card h3 { font-size: clamp(1.1rem, 2vw, 1.8rem); line-height: 1.1; margin-top: 1.2rem; word-break: normal; overflow-wrap: break-word; hyphens: none; }
-        .bento-card p { margin-top: 1rem; opacity: 0.8; font-size: clamp(0.9rem, 1.2vw, 1rem); line-height: 1.5; }
-        .bento-card:hover { transform: translate(-4px, -6px) rotate(-0.5deg); box-shadow: 10px 12px 0px var(--accent-acid); }
-        .card-large { grid-column: span 8; grid-row: span 2; min-height: 35vh; background: var(--bg-deep); color: var(--bg-paper); border-color: var(--bg-paper); }
-        .card-tall { grid-column: span 4; grid-row: span 2; }
-        .card-wide { grid-column: span 8; }
-        .card-small { grid-column: span 4; }
-        .card-hottest { grid-column: span 12; background: var(--accent-blood); color: #fff; border-color: var(--accent-blood); padding: 3rem; }
-        .card-hottest h3 { font-size: clamp(1.8rem, 3vw, 3rem); line-height: 0.9; }
-        .card-hottest p { font-size: 1.2rem; opacity: 0.9; max-width: 800px;}
-        .card-hottest:hover { box-shadow: 10px 12px 0px var(--accent-acid); }
-        .tag { font-family: var(--font-display); font-size: 0.75rem; font-weight: 800; background: var(--bg-deep); color: var(--bg-paper); padding: 0.3rem 0.6rem; display: inline-block; align-self: flex-start; margin-bottom: 0.5rem; }
-        .tag.us { background: #1a1a1a; color: var(--accent-acid); border: 1px solid var(--accent-acid); }
-        .tag.pl { background: #fff; color: #e5383b; border: 1px solid #e5383b; }
-        .card-hottest .tag { background: var(--bg-deep); color: var(--accent-acid); }
+        /* KAFELKI Z ODCINANIEM TEKSTU I DATAMI */
+        .bento-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2rem; }
+        .card { 
+            background: var(--paper); 
+            color: #000; 
+            padding: 2rem; 
+            border: 2px solid #000; 
+            box-shadow: 6px 6px 0 var(--blood); 
+            transition: 0.2s; 
+            display: flex; 
+            flex-direction: column; 
+            grid-column: span 6;
+        }
+        
+        .card:hover { transform: translate(-3px, -3px); box-shadow: 10px 10px 0 var(--acid); }
+        .card h3 { margin: 0; font-size: clamp(1.2rem, 2vw, 1.8rem); line-height: 1.1; margin-top: 10px;}
+        .card p { margin-top: 10px; font-size: 1.05rem; opacity: 0.8; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
-        .vault-input { background: transparent; border: none; border-bottom: 4px solid var(--bg-paper); color: var(--accent-acid); font-family: var(--font-display); font-size: clamp(1.2rem, 3vw, 2.5rem); padding: 1rem 0; font-weight: 800; width: 100%; transition: border-color 0.3s; margin-bottom: 3rem;}
-        .vault-input:focus { outline: none; border-color: var(--accent-acid); }
-        .article-header { padding: 0 5vw 3rem 5vw; border-bottom: 4px solid var(--accent-blood); margin-bottom: 3rem; }
-        .article-h1 { font-size: clamp(2rem, 5vw, 4rem); margin-top: 1rem; overflow-wrap: break-word; line-height: 0.9;}
-        .article-body { max-width: 900px; margin: 0 auto; padding: 0 5vw 10vh 5vw; font-size: 1.15rem; line-height: 1.8; }
-        .article-body p { margin-bottom: 2rem; text-align: justify; }
-        .media-embed { width: 100%; aspect-ratio: 16/9; border: 4px solid var(--accent-acid); margin: 2rem 0; box-shadow: 8px 8px 0px rgba(219, 255, 0, 0.2); }
-        .back-btn { background: transparent; border: 2px solid var(--bg-paper); color: var(--bg-paper); padding: 0.8rem 1.5rem; font-family: var(--font-display); font-weight: 700; margin: 0 5vw 2rem 5vw; display: inline-block; transition: all 0.3s;}
-        .back-btn:hover { background: var(--bg-paper); color: var(--bg-deep); transform: translateX(-5px);}
+        .card-hottest { grid-column: span 12; background: var(--blood); color: #fff; border-color: var(--blood); padding: 3rem;}
+        .card-hottest h3 { font-size: clamp(2rem, 4vw, 3.5rem); }
+        .card-hottest p { font-size: 1.2rem; max-width: 800px; -webkit-line-clamp: 4; }
+        
+        .tag { font-family: 'Syne'; font-size: 0.75rem; font-weight: 800; background: var(--bg); color: var(--paper); padding: 5px 10px; display: inline-block; margin-bottom: 10px;}
+        .card-hottest .tag { background: var(--bg); color: var(--acid); }
+        
+        /* DATA NA KAFELKU - GWARANCJA WIDOCZNOŚCI (CZARNA RAMKA, CZARNY TEKST) */
+        .date-tag { 
+            font-family: 'Syne'; 
+            font-size: 0.75rem; 
+            font-weight: 800; 
+            background: transparent; 
+            border: 2px solid #000; 
+            color: #000; 
+            padding: 4px 8px; 
+            display: inline-block; 
+            margin-bottom: 10px; 
+            text-transform: uppercase;
+        }
+        /* Na czerwonym kafelku biała data */
+        .card-hottest .date-tag { border-color: #fff; color: #fff; border-width: 1px;}
 
-        /* MASHUP MIXER UI */
-        .mixer-container { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 0 5vw 5vh 5vw; }
-        .dj-deck { border: 2px solid var(--accent-acid); padding: 2rem; display: flex; flex-direction: column; gap: 1rem; background: var(--bg-deep); }
-        .dj-deck-player { width: 100%; height: 200px; border: 2px dashed rgba(226, 220, 208, 0.3); background: #000; position: relative; overflow:hidden;}
-        .mashup-console { grid-column: span 2; padding: 3rem; background: var(--bg-paper); color: var(--bg-deep); text-align: center; border: 2px solid var(--bg-deep); box-shadow: 8px 8px 0px var(--accent-blood); display: flex; flex-direction: column; align-items: center; gap: 1.5rem;}
-        .big-mashup-btn { font-size: 2rem; padding: 1.5rem 3rem; background: var(--bg-deep); color: var(--accent-acid); border: 4px solid var(--accent-acid); text-transform: uppercase; font-family: var(--font-display); font-weight: 800; transition: 0.3s;}
-        .big-mashup-btn:hover { background: var(--accent-acid); color: var(--bg-deep); box-shadow: 8px 8px 0px var(--bg-deep); transform: translate(-4px, -4px);}
-        .big-mashup-btn:disabled { opacity: 0.5; filter: grayscale(1); pointer-events: none;}
-        #mashup-loading { display: none; font-family: monospace; font-size: 1.2rem; color: var(--bg-deep); font-weight: bold; width: 100%; max-width: 500px; }
-        .progress-bar { width: 100%; height: 20px; border: 2px solid var(--bg-deep); margin-top: 10px; position: relative; overflow: hidden;}
-        .progress-fill { height: 100%; width: 0%; background: var(--accent-blood); transition: width 0.1s; }
+        /* SLIDER ARCHIWUM */
+        .carousel-viewport { 
+            overflow: hidden; 
+            width: 100%; 
+            position: relative; 
+        }
+        
+        .carousel-track { 
+            display: flex; 
+            transition: transform 0.6s cubic-bezier(0.85, 0, 0.15, 1); 
+            width: 100%;
+        }
+        
+        .carousel-slide { 
+            width: 100%; 
+            flex-shrink: 0; 
+            box-sizing: border-box;
+            padding-bottom: 2rem;
+        }
 
-        /* BATTLE UI */
-        .battle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 0 5vw; align-items: start;}
-        .battle-panel { border: 2px solid rgba(226, 220, 208, 0.2); padding: 2.5rem 2rem; display: flex; flex-direction: column; gap: 1rem; }
-        .form-input { background: transparent; border: none; border-bottom: 3px solid var(--bg-paper); color: var(--accent-acid); font-family: var(--font-display); font-size: 1.5rem; padding: 0.5rem 0; font-weight: 700; width: 100%; }
-        .form-input:focus { outline: none; border-color: var(--accent-acid); }
-        .brutal-btn { background: var(--accent-acid); color: var(--bg-deep); border: none; font-family: var(--font-display); font-weight: 800; padding: 1rem 2rem; display: inline-block; font-size: 1.2rem;}
-        .brutal-btn:hover:not(:disabled) { transform: translate(-4px, -4px); box-shadow: 6px 6px 0px var(--accent-blood); }
-        .room-item { border: 1px dashed rgba(226, 220, 208, 0.3); padding: 1rem; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-display); margin-bottom: 1rem; transition: all 0.2s; }
-        .room-item:hover { border-style: solid; border-color: var(--accent-acid); background: rgba(219, 255, 0, 0.05); }
+        /* IDEALNIE CZYTELNY ARTYKUŁ (Duża czcionka Zilla) */
+        #article-content { max-width: 900px; margin: 0 auto; padding-bottom: 5vh;}
+        #article-content h1 { font-family: 'Syne', sans-serif; font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 0.9; margin-bottom: 2rem; word-break: break-word; color: var(--paper);}
+        #article-content p { font-family: 'Zilla Slab', serif; font-weight: 400; font-size: 1.5rem; line-height: 1.8; margin-bottom: 2rem; text-align: left; color: #e2dcd0;}
+        .source-tag { font-family: 'Syne', sans-serif !important; font-size: 1rem !important; color: var(--blood) !important; border-top: 2px dashed var(--blood); padding-top: 15px; display: inline-block; margin-top: 2rem; font-weight: 800 !important;}
+        .media-embed { width: 100%; aspect-ratio: 16/9; margin-top: 2rem; border: 4px solid var(--acid); box-shadow: 8px 8px 0 rgba(219, 255, 0, 0.2);}
 
-        #game-arena { display: none; padding: 0 5vw 10vh 5vw; text-align: center; }
-        .arena-title { font-size: clamp(2rem, 5vw, 4rem); margin-bottom: 1rem; line-height: 0.8;}
-        .arena-status { font-family: var(--font-display); font-size: 1.2rem; font-weight: 800; color: var(--accent-blood); animation: pulse 2s infinite; margin-bottom: 3rem;}
-        .game-box { border: 2px solid var(--accent-acid); padding: 3rem 2rem; max-width: 800px; margin: 0 auto; background: rgba(0,0,0,0.5); box-shadow: 10px 10px 0px rgba(219, 255, 0, 0.2);}
-        #yt-player-container { position: relative; width: 100%; height: 250px; border: 4px solid var(--accent-purple); margin-bottom: 2rem; overflow: hidden; background: #000; }
-        #yt-player { position: absolute; top:0; left:0; width:100%; height:100%; z-index: 1; pointer-events: none;}
-        .audio-blackout { position: absolute; top:0; left:0; width:100%; height:100%; background: #000; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--accent-acid); font-family: var(--font-display); font-size: 2rem; font-weight: 800; }
-        .yt-result-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px dashed rgba(226,220,208,0.2); margin-bottom: 0.5rem; transition: all 0.2s; }
-        .yt-result-item:hover { border-color: var(--accent-acid); background: rgba(219,255,0,0.1); transform: translateX(5px); }
+        /* LIKE / DISLIKE & COMMENTS UI */
+        .interaction-bar { display: flex; gap: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-top: 40px; margin-bottom: 40px;}
+        .vote-btn { background: transparent; border: 2px solid var(--paper); color: var(--paper); padding: 10px 20px; font-family: 'Syne'; font-size: 1.2rem; font-weight: bold; transition: 0.2s;}
+        .vote-btn:hover { background: var(--acid); color: #000; border-color: var(--acid); transform: translateY(-2px);}
+        .comments-section { background: rgba(255,255,255,0.03); padding: 30px; border-left: 4px solid var(--purple);}
+        .comment-item { padding: 15px; border-bottom: 1px dashed rgba(255,255,255,0.1); font-family: 'Zilla Slab'; font-size: 1.1rem; }
+        .comment-meta { font-family: 'Syne'; font-weight: bold; color: var(--purple); font-size: 0.9rem; margin-bottom: 5px; display: flex; justify-content: space-between;}
+        .comment-input-box { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .comment-textarea { width: 100%; background: #111; border: 1px solid var(--paper); color: #fff; padding: 15px; font-family: 'Zilla Slab'; font-size: 1.1rem; resize: vertical; min-height: 100px; outline: none;}
+        .comment-textarea:focus { border-color: var(--purple); }
+        .auth-warning { background: var(--blood); color: #fff; padding: 15px; font-family: 'Syne'; font-weight: bold; text-align: center; font-size: 1.2rem;}
 
-        #ui-notification { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: var(--accent-blood); color: #fff; padding: 1rem 2rem; font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; z-index: 99999; display: none; box-shadow: 5px 5px 0px var(--bg-deep); }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        /* LAYOUT I FORMULARZE */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start;}
+        .panel { border: 2px solid rgba(226,220,208,0.2); padding: 2.5rem; background: rgba(0,0,0,0.5);}
+        .input-text { width: 100%; background: transparent; border: none; border-bottom: 2px solid var(--paper); color: var(--acid); padding: 10px 0; font-family: 'Syne'; font-size: 1.2rem; font-weight: bold; margin-bottom: 1.5rem; outline: none;}
+        .btn { background: var(--acid); color: #000; border: none; padding: 12px 24px; font-family: 'Syne'; font-weight: 800; font-size: 1.1rem; transition: 0.2s; text-transform: uppercase;}
+        .btn:hover { box-shadow: 6px 6px 0 var(--blood); transform: translate(-2px, -2px); }
 
-        /* DIGGER_AI */
-        #ai-trigger-btn { position: fixed; top: 50%; right: 0; transform: translateY(-50%); background: var(--accent-acid); color: var(--bg-deep); writing-mode: vertical-rl; text-orientation: mixed; padding: 1.5rem 0.5rem; font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; z-index: 10001; border: none; border-radius: 8px 0 0 8px; box-shadow: -4px 4px 0px rgba(0,0,0,0.5); transition: transform 0.2s; }
-        #ai-trigger-btn:hover { transform: translateY(-50%) translateX(-5px); }
-        #ai-trigger-btn.hidden { transform: translateY(-50%) translateX(100%); }
-        #digger-ai { position: fixed; top: 0; right: 0; height: 100vh; z-index: 10000; width: 380px; background: var(--bg-deep); border-left: 2px solid var(--accent-acid); box-shadow: -8px 0px 15px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.4s var(--ease-snap); }
-        #digger-ai.open { transform: translateX(0); }
-        .ai-header { background: var(--accent-acid); color: var(--bg-deep); padding: 1rem; font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center; }
-        .ai-messages { flex: 1; overflow-y: auto; padding: 1.5rem; font-family: monospace; font-size: 1rem; color: var(--bg-paper); display: flex; flex-direction: column; gap: 1rem; }
-        .ai-msg { border-left: 2px solid var(--accent-blood); padding-left: 10px; opacity: 0.9; margin-bottom: 0.5rem; }
-        .ai-msg.user { border-left: none; border-right: 2px solid var(--accent-acid); text-align: right; padding-right: 10px; color: var(--accent-acid); }
-        .ai-input-container { display: flex; border-top: 1px solid rgba(226,220,208,0.2); padding: 1rem; }
-        .ai-input { flex: 1; background: transparent; border: none; padding: 0.5rem; color: var(--accent-acid); font-family: monospace; font-size: 1.1rem; border-bottom: 2px solid var(--accent-blood); }
-        .ai-input:focus { outline: none; border-color: var(--accent-acid); }
+        /* THE MIXER */
+        .mixer-controls { grid-column: span 2; display: flex; flex-direction: column; align-items: center; gap: 20px; background: var(--paper); padding: 2rem; border: 2px solid #000; box-shadow: 8px 8px 0 var(--blood);}
+        .mixer-play-btn { font-size: 2rem; padding: 1rem 3rem; background: var(--bg); color: var(--acid); border: none; font-family: 'Syne'; font-weight: 900; transition: 0.3s;}
+        .mixer-play-btn:disabled { opacity: 0.5; filter: grayscale(1); }
+        .progress-container { width: 100%; height: 25px; background: #000; border: 2px solid var(--acid); display: none; margin-top: 20px;}
+        .progress-bar { width: 0%; height: 100%; background: var(--blood); transition: width 0.3s; }
+        
+        .leaderboard { background: #111; padding: 2rem; border: 1px solid var(--acid);}
+        .lb-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #333; font-family: 'Syne'; font-size: 1.2rem;}
 
-        /* LIVE ALERT CSS DLA NOWYCH ARTYKUŁÓW */
-        #live-alert { position: fixed; bottom: 20px; right: -450px; width: 350px; background: var(--bg-paper); color: var(--bg-deep); border-left: 6px solid var(--accent-blood); padding: 1.5rem; box-shadow: -8px 8px 0px rgba(229, 56, 59, 0.2); transition: right 0.5s var(--ease-snap); z-index: 100000; font-family: var(--font-body); }
+        #game-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,14,13,0.95); z-index: 10000; align-items: center; justify-content: center; flex-direction: column; text-align: center;}
+        #game-overlay h1 { color: var(--acid); font-size: clamp(3rem, 8vw, 6rem); margin-bottom: 10px;}
+        #game-overlay p { font-size: 1.5rem; color: #fff; max-width: 600px; margin-bottom: 3rem;}
+
+        #live-alert { position: fixed; bottom: 20px; right: -400px; width: 320px; background: var(--paper); color: #000; padding: 1.5rem; border-left: 6px solid var(--blood); transition: 0.5s cubic-bezier(0.85, 0, 0.15, 1); z-index: 9999; box-shadow: 10px 10px 0 rgba(0,0,0,0.5); }
         #live-alert.show { right: 20px; }
-        #live-alert h4 { font-family: var(--font-display); color: var(--accent-blood); margin-bottom: 0.5rem; font-size: 1.2rem; }
+        #live-alert h4 { margin: 0; font-size: 1.1rem; color: var(--blood); margin-top: 5px; line-height: 1.2;}
 
-        @media (max-width: 1200px) { .card-large { grid-column: span 12; min-height: auto; } .card-wide { grid-column: span 12; } .card-tall { grid-column: span 6; grid-row: auto; } .card-small { grid-column: span 6; } }
-        @media (max-width: 900px) { .nav-links { display: none; } .card-large, .card-tall, .card-wide, .card-small, .card-hottest { grid-column: span 12; } .battle-grid, .mixer-container { grid-template-columns: 1fr; } #digger-ai { width: 100vw; } }
+        /* DIGGER AI */
+        #ai-trigger-btn { position: fixed; top: 50%; right: 0; transform: translateY(-50%); background: var(--acid); color: var(--bg); writing-mode: vertical-rl; text-orientation: mixed; padding: 1.5rem 0.5rem; font-family: 'Syne'; font-weight: 800; font-size: 1.2rem; z-index: 10001; border: none; border-radius: 8px 0 0 8px; box-shadow: -4px 4px 0px rgba(0,0,0,0.5); transition: 0.3s; }
+        #ai-trigger-btn:hover { background: var(--blood); color: #fff; padding-right: 1rem;}
+        #digger-ai { position: fixed; top: 0; right: 0; height: 100vh; width: 380px; background: var(--bg); border-left: 2px solid var(--acid); box-shadow: -8px 0px 15px rgba(0, 0, 0, 0.8); display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.85, 0, 0.15, 1); z-index: 10002; }
+        #digger-ai.open { transform: translateX(0); }
+        .ai-header { background: var(--acid); color: var(--bg); padding: 1rem; font-family: 'Syne'; font-weight: 900; font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+        .ai-messages { flex: 1; overflow-y: auto; padding: 1.5rem; font-size: 1rem; display: flex; flex-direction: column; gap: 1rem; border-bottom: 1px solid var(--acid);}
+        .ai-input { width: 100%; background: transparent; border: none; padding: 1.5rem; color: var(--acid); font-family: 'Zilla Slab'; font-size: 1.1rem; outline: none; }
+        
+        /* Animacja pisania */
+        .ai-typing-blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0.3; } }
+
+        @media (max-width: 1000px) { .grid-2 { grid-template-columns: 1fr; } .nav-links { display: none;} .card { grid-column: span 12; } .mixer-controls{grid-column: span 1;} #digger-ai { width: 100vw; } }
+        .hover-target { cursor: none !important; }
     </style>
 </head>
 <body>
-
     <svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#noiseFilter)"/></svg>
     <div class="custom-cursor" id="cursor"></div>
-    <div id="ui-notification"></div>
+
+    <div id="email-verify-box" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--paper); color:#000; padding:20px; border:4px solid var(--purple); z-index:99999; text-align:center; box-shadow: 10px 10px 0 #000;">
+        <h3 style="margin-top:0;">WERYFIKACJA E-MAIL</h3>
+        <p>Wysłano link weryfikacyjny na Twój adres e-mail.</p>
+        <button class="btn hover-target" id="sim-verify-btn" style="background:var(--purple); color:#fff; margin-top:10px;">[SYMULUJ KLIKNIĘCIE W LINK]</button>
+    </div>
 
     <div id="live-alert">
-        <div style="font-size: 0.8rem; font-weight: bold; color: var(--bg-deep); opacity: 0.5; margin-bottom: 5px;">🔴 SYSTEM: WYKRYTO NOWY WYCIEK</div>
-        <h4 id="alert-title">Tytuł</h4>
-        <p id="alert-desc" style="font-size: 0.9rem;">Opis...</p>
+        <div style="font-size: 0.7rem; opacity: 0.6; font-weight: bold;">🔴 NEW DROP DETECTED</div>
+        <h4 id="alert-title" style="margin:5px 0 0 0; font-family:'Syne'; font-size:1.1rem; color:var(--blood)">Tytuł</h4>
+    </div>
+
+    <div id="game-overlay">
+        <h1>WYNIK BATTLE!</h1>
+        <p id="overlay-msg"></p>
+        <button class="btn hover-target" onclick="location.reload()">ZAMKNIJ I WRÓĆ DO LOBBY</button>
     </div>
 
     <nav class="nav-header">
-        <div class="logo hover-target" onclick="navigate('latest')" style="font-size: 1.5rem;">THE CRATE.</div>
+        <div class="logo hover-target" onclick="navigate('latest')">THE CRATE.</div>
         <div class="nav-links">
-            <a href="#latest" class="hover-target active" id="nav-latest" onclick="navigate('latest'); return false;">LATEST</a>
-            <a href="#archive" class="hover-target" id="nav-archive" onclick="navigate('archive'); return false;">ARCHIVE ↳</a>
-            <a href="#leaks" class="hover-target" id="nav-leaks" onclick="navigate('leaks'); return false;" style="color: var(--accent-blood);">LEAKS & SNIPPETS</a>
-            <a href="#mixer" class="hover-target" id="nav-mixer" onclick="navigate('mixer'); return false;" style="color: var(--accent-acid);">THE MIXER ↹</a>
-            <a href="#battle" class="hover-target" id="nav-battle" onclick="navigate('battle'); return false;">AUX BATTLE <span style="color:var(--accent-purple)">●</span></a>
+            <a href="#" class="hover-target" onclick="navigate('latest')">LATEST</a>
+            <a href="#" class="hover-target" onclick="navigate('archive')">ARCHIVE ↳</a>
+            <a href="#" class="hover-target" onclick="navigate('leaks')" style="color: var(--blood);">LEAKS & SNIPPETS</a>
+            <a href="#" class="hover-target" onclick="navigate('mixer')" style="color: var(--acid);">THE MIXER ↹</a>
+            <a href="#" class="hover-target" onclick="navigate('battle')" style="color: var(--purple);">AUX BATTLE ●</a>
+            <div id="auth-display" class="auth-status hover-target" onclick="handleProfileClick()">ZALOGUJ</div>
         </div>
     </nav>
 
-    <main id="view-latest" class="view-section active"><div style="padding: 0 5vw 1rem 5vw;"><h1 style="font-size: clamp(2rem, 5vw, 4rem);">FRESH DROPS.</h1></div><section class="bento-container" id="latest-grid"></section></main>
-    <main id="view-archive" class="view-section"><div style="padding: 0 5vw 1rem 5vw;"><h1 style="font-size: clamp(2rem, 5vw, 4rem);">THE ARCHIVE.</h1><input type="text" id="archive-search" class="vault-input hover-target" placeholder="SZUKAJ W BAZIE..." onkeyup="filterArchive()"></div><section class="bento-container" id="archive-grid"></section></main>
-    <main id="view-leaks" class="view-section"><div style="padding: 0 5vw 1rem 5vw;"><h1 style="font-size: clamp(2rem, 5vw, 4rem); color: var(--accent-blood);">RAW AUDIO.</h1></div><section class="bento-container" id="leaks-grid"></section></main>
-    <main id="view-article" class="view-section"><button class="back-btn hover-target" onclick="history.back()">← WSTECZ</button><article id="article-content"></article></main>
+    <main id="view-auth" class="view-section">
+        <h1 style="font-size: 3.5rem; margin-bottom: 3rem;">SYSTEM DOSTĘPU.</h1>
+        <div class="grid-2">
+            <div class="panel">
+                <h3 style="color: var(--acid); font-size: 2rem; margin-bottom: 2rem;">ZALOGUJ SIĘ</h3>
+                <input type="text" id="login-user" class="input-text hover-target" placeholder="Alias lub E-mail">
+                <input type="password" id="login-pass" class="input-text hover-target" placeholder="Hasło">
+                <button class="btn hover-target" style="width: 100%; margin-top: 1rem;" onclick="login()">WEJDŹ DO GRY</button>
+                <p id="login-msg" style="margin-top: 15px; color: var(--blood); font-weight: bold;"></p>
+            </div>
+            <div class="panel" style="border-color: var(--purple);">
+                <h3 style="color: var(--purple); font-size: 2rem; margin-bottom: 1rem;">UTWÓRZ KONTO</h3>
+                <p style="font-size: 0.9rem; opacity: 0.8;">Hasło musi zawierać minimum 7 znaków i znak specjalny (!@#$%^&*).</p>
+                <input type="email" id="reg-email" class="input-text hover-target" placeholder="Adres E-mail">
+                <input type="text" id="reg-nick" class="input-text hover-target" placeholder="Twój Nick (Alias)">
+                <input type="password" id="reg-pass1" class="input-text hover-target" placeholder="Hasło">
+                <input type="password" id="reg-pass2" class="input-text hover-target" placeholder="Powtórz Hasło">
+                <button class="btn hover-target" style="background:var(--purple); color:#fff; width: 100%; margin-top: 1rem;" onclick="register()">ZAREJESTRUJ</button>
+                <p id="reg-msg" style="margin-top: 15px; font-weight: bold;"></p>
+            </div>
+        </div>
+    </main>
 
-    <main id="view-mixer" class="view-section">
-        <div style="padding: 0 5vw 2rem 5vw;"><h1 style="font-size: clamp(2rem, 5vw, 4rem); color: var(--accent-acid);">AI MASHUP GENERATOR</h1></div>
-        <div class="mixer-container">
-            <div class="dj-deck">
-                <h2>UTWÓR 1 (BIT)</h2>
-                <div style="display: flex; gap: 10px;"><input type="text" id="mixer-search-a" class="form-input hover-target" placeholder="np. Travis Scott instrumental"><button class="brutal-btn hover-target" style="padding: 0.5rem 1rem;" onclick="searchMixer('A')">SZUKAJ</button></div>
-                <div id="mixer-results-a" style="max-height: 150px; overflow-y: auto;"></div>
-                <div id="player-container-a" class="dj-deck-player"><div id="yt-deck-a" style="position:absolute; width:100%; height:100%;"></div><div class="audio-blackout" style="font-size:1.2rem;" id="cover-a">CZEKAM NA TRACK...</div></div>
+    <main id="view-profile" class="view-section">
+        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 2px solid var(--acid);">
+            <img id="prof-avatar-img" src="" class="nav-avatar" style="width: 100px; height: 100px;">
+            <div>
+                <h1 id="prof-username" style="font-size: 3rem; margin:0;">NICKNAME</h1>
+                <p style="color: var(--acid); font-family: 'Syne'; font-size: 1.5rem; font-weight: 800;" id="prof-points">0 PKT</p>
             </div>
-            <div class="dj-deck">
-                <h2 style="color: var(--accent-purple);">UTWÓR 2 (WOKAL)</h2>
-                <div style="display: flex; gap: 10px;"><input type="text" id="mixer-search-b" class="form-input hover-target" placeholder="np. Oki acapella"><button class="brutal-btn hover-target" style="padding: 0.5rem 1rem; background: var(--accent-purple);" onclick="searchMixer('B')">SZUKAJ</button></div>
-                <div id="mixer-results-b" style="max-height: 150px; overflow-y: auto;"></div>
-                <div id="player-container-b" class="dj-deck-player"><div id="yt-deck-b" style="position:absolute; width:100%; height:100%;"></div><div class="audio-blackout" style="font-size:1.2rem; color:var(--accent-purple);" id="cover-b">CZEKAM NA TRACK...</div></div>
+        </div>
+        <div class="grid-2">
+            <div class="panel">
+                <h3 style="color: var(--acid); margin-bottom: 2rem;">PERSONALIZACJA</h3>
+                <label style="font-family:'Syne'; color:var(--acid);">Link do Avatara</label>
+                <input type="text" id="edit-avatar" class="input-text hover-target">
+                <label style="font-family:'Syne'; color:var(--acid);">Twój Opis (Bio)</label>
+                <input type="text" id="edit-bio" class="input-text hover-target">
+                <button class="btn hover-target" onclick="saveProfile()">ZAPISZ ZMIANY</button>
+                <button class="btn hover-target" style="background:transparent; color:var(--blood); border:2px solid var(--blood);" onclick="logout()">WYLOGUJ</button>
             </div>
-            <div class="mashup-console">
-                <button id="btn-create-mashup" class="big-mashup-btn hover-target" onclick="generateMashup()" disabled>GENERUJ MASHUP</button>
-                <div id="mashup-loading">
-                    <div id="mashup-status-text">ANALIZA BPM I SEPARACJA STEMÓW...</div>
-                    <div class="progress-bar"><div class="progress-fill" id="mashup-progress"></div></div>
+        </div>
+    </main>
+
+    <main id="view-latest" class="view-section active">
+        <h1 style="font-size: clamp(3rem, 6vw, 5rem); margin-bottom: 2rem;">FRESH DROPS.</h1>
+        <div class="bento-grid" id="grid-latest"></div>
+    </main>
+
+    <main id="view-archive" class="view-section">
+        <h1 style="font-size: clamp(3rem, 6vw, 5rem); margin-bottom: 2rem;">THE ARCHIVE.</h1>
+        <input type="text" id="archive-search" class="input-text hover-target" placeholder="Szukaj w bazie (np. Travis, Carti)..." onkeyup="renderArchive()" style="border-bottom: 4px solid var(--acid); font-size: 2rem; margin-bottom: 2rem;">
+        
+        <div class="carousel-viewport">
+            <div class="carousel-track" id="archive-track">
+                </div>
+        </div>
+        
+        <div style="display: flex; justify-content: center; gap: 20px; margin-top: 3rem; padding-bottom: 2rem;">
+            <button class="btn hover-target" style="font-size:1.5rem; padding: 10px 30px; background: transparent; border: 2px solid var(--paper); color: var(--paper);" onclick="slideArchive(-1)">← COFNIJ</button>
+            <button class="btn hover-target" style="font-size:1.5rem; padding: 10px 30px;" onclick="slideArchive(1)">DALEJ →</button>
+        </div>
+    </main>
+
+    <main id="view-leaks" class="view-section">
+        <h1 style="font-size: clamp(3rem, 6vw, 5rem); color: var(--blood); margin-bottom: 2rem;">RAW AUDIO.</h1>
+        <div class="bento-grid" id="grid-leaks"></div>
+    </main>
+    
+    <main id="view-article" class="view-section">
+        <button class="btn hover-target" onclick="goBack()" style="margin-bottom: 3rem; background: transparent; border: 2px solid var(--paper); color: var(--paper);">← WRÓĆ</button>
+        <div id="art-content"></div>
+        
+        <div id="art-socials" style="max-width: 900px; margin: 0 auto; display:none;">
+            <div class="interaction-bar">
+                <button class="vote-btn hover-target" onclick="voteArticle('like')">👍 <span id="art-likes">0</span></button>
+                <button class="vote-btn hover-target" onclick="voteArticle('dislike')">👎 <span id="art-dislikes">0</span></button>
+            </div>
+            <div class="comments-section">
+                <h3 style="color: var(--purple); font-size: 1.5rem; margin-top: 0;">KOMENTARZE (<span id="comments-count">0</span>)</h3>
+                <div id="comments-list" style="margin-bottom: 30px;"></div>
+                <div id="comment-auth-gate">
+                    <div class="comment-input-box">
+                        <textarea id="new-comment-text" class="comment-textarea hover-target" placeholder="Napisz, co myślisz..."></textarea>
+                        <button class="btn hover-target" style="background:var(--purple); color:#fff; align-self:flex-start;" onclick="postComment()">WYŚLIJ KOMENTARZ</button>
+                    </div>
+                </div>
+                <div id="comment-login-gate" class="auth-warning" style="display:none;">
+                    ZALOGUJ SIĘ, ABY DODAĆ KOMENTARZ.
                 </div>
             </div>
         </div>
     </main>
 
-    <main id="view-battle" class="view-section">
-        <div id="lobby-ui">
-            <div style="padding: 0 5vw 3rem 5vw;"><h1 style="font-size: clamp(2rem, 5vw, 4rem);">AUX BATTLE</h1></div>
-            <div class="battle-grid">
-                <div style="display: flex; flex-direction: column; gap: 2rem;">
-                    <div class="battle-panel" style="border-color: var(--accent-acid);"><h3 style="color:var(--accent-acid)">/ STWÓRZ POKÓJ</h3><input type="text" class="form-input hover-target" placeholder="TWÓJ ALIAS" id="host-name"><input type="password" class="form-input hover-target" placeholder="HASŁO (OPCJA)" id="host-pwd" style="font-size: 1rem;"><button class="brutal-btn hover-target" onclick="createRoom()" style="margin-top: 1rem;">OTWÓRZ</button></div>
-                    <div class="battle-panel"><h3 style="color:var(--accent-purple)">/ WEJDŹ DO GRY</h3><input type="text" id="join-alias" class="form-input hover-target" placeholder="TWÓJ ALIAS" style="margin-bottom: 1rem; border-color: var(--accent-purple); color: var(--accent-purple);"><div id="live-rooms-list"><p style="opacity: 0.5;">Skanowanie...</p></div></div>
-                </div>
+    <main id="view-mixer" class="view-section">
+        <h1 style="font-size: clamp(3rem, 6vw, 5rem); color: var(--acid); margin-bottom: 2rem;">AI MASHUP MIXER.</h1>
+        <div class="grid-2">
+            <div id="mixer-yt-a" style="position:absolute; opacity:0; pointer-events:none;"></div>
+            <div id="mixer-yt-b" style="position:absolute; opacity:0; pointer-events:none;"></div>
+            <div class="panel" style="border-color: var(--acid);">
+                <h3 style="color:var(--acid);">DECK A (BIT)</h3>
+                <input type="text" class="input-text hover-target" placeholder="Szukaj instrumentalu..." onchange="socket.emit('searchTrackMixer', {query: this.value, deck: 'A'})">
+                <div id="resA"></div>
+            </div>
+            <div class="panel" style="border-color: var(--purple);">
+                <h3 style="color:var(--purple);">DECK B (WOKAL)</h3>
+                <input type="text" class="input-text hover-target" placeholder="Szukaj acapelli..." onchange="socket.emit('searchTrackMixer', {query: this.value, deck: 'B'})">
+                <div id="resB"></div>
+            </div>
+            <div class="mixer-controls">
+                <h2 style="margin: 0; color: var(--blood);" id="mixer-status">WYBIERZ UTWORY DO ZMIXOWANIA</h2>
+                <button class="mixer-play-btn hover-target" id="mixer-play-btn" onclick="generateMashup()" disabled>GENERUJ MASHUP</button>
+                <div class="progress-container" id="mix-progress-container"><div class="progress-bar" id="mix-progress"></div></div>
+                <button class="btn hover-target" id="mixer-pause-btn" style="display:none; width:100%; font-size: 1.5rem; background: var(--blood); color:#fff;" onclick="toggleMixerPlay()">PAUSE AUDIO</button>
             </div>
         </div>
-        <div id="game-arena">
-            <h1 class="arena-title">CYPHER: <span id="arena-room-id" style="color:var(--accent-purple)"></span></h1>
-            <p class="arena-status" id="arena-status-text">OCZEKIWANIE NA RYWALA</p>
-            <div id="game-controls" class="game-box" style="display: none;">
-                <div id="host-view" style="display: none;"><h3 style="color: var(--accent-acid); font-size: 1.5rem; margin-bottom: 1rem;">WYSZUKAJ TRACK</h3><div style="display: flex; gap: 1rem; margin-bottom: 2rem;"><input type="text" class="form-input hover-target" id="yt-search-input" placeholder="Wpisz np. Skepta..."><button class="brutal-btn hover-target" onclick="searchYouTube('host')">SZUKAJ</button></div><div id="yt-search-results-host"></div></div>
-                <div id="guesser-view" style="display: none;"><h3 style="color: var(--accent-acid); font-size: 2rem; margin-bottom: 1rem;">SŁUCHAJ!</h3><div class="score-display">PUNKTY: <span id="points-val">1000</span></div><div id="yt-player-container"><div id="yt-player" style="position:absolute; width:100%; height:100%;"></div><div class="audio-blackout"><span>AUDIO ONLY</span></div></div><button class="brutal-btn hover-target" id="btn-play-audio" style="width: 100%; margin-bottom: 1rem;" onclick="startListening()" disabled>ŁADOWANIE...</button><button class="brutal-btn hover-target" id="btn-stop-audio" style="width: 100%; margin-bottom: 2rem; display: none; background: var(--accent-blood); color: #fff;" onclick="stopAndGuess()">[ STOP ] ZNAM TO!</button><div id="guess-form" style="display: none; border-top: 2px dashed rgba(226,220,208,0.2); padding-top: 2rem;"><div class="timer-display">CZAS: <span id="countdown-val">30</span>s</div><div style="display: flex; gap: 1rem; margin-bottom: 1rem;"><input type="text" class="form-input hover-target" id="guess-search-input" placeholder="Wyszukaj odpowiedź..." onkeyup="notifyTyping()"><button class="brutal-btn hover-target" onclick="searchYouTube('guesser')">SZUKAJ</button></div><div id="yt-search-results-guesser"></div></div></div>
+    </main>
+
+    <main id="view-battle" class="view-section">
+        <h1 style="font-size: clamp(3rem, 6vw, 5rem); margin-bottom: 2rem;">AUX BATTLE.</h1>
+        <div class="grid-2" id="lobby-ui">
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <div class="panel" style="border-color: var(--acid);">
+                    <h3 style="color:var(--acid); margin-bottom: 1rem;">/ STWÓRZ POKÓJ</h3>
+                    <input type="text" class="input-text hover-target" placeholder="Alias (Gość)" id="host-name">
+                    <button class="btn hover-target" onclick="createRoom()">OTWÓRZ LOBBY</button>
+                </div>
+                <div class="panel">
+                    <h3 style="color:var(--purple); margin-bottom: 1rem;">/ DOŁĄCZ DO GRY</h3>
+                    <input type="text" id="join-alias" class="input-text hover-target" placeholder="Alias (Gość)">
+                    <div id="live-rooms-list" style="margin-top:20px;">Trwa nasłuch serwerów...</div>
+                </div>
+            </div>
+            <div class="panel leaderboard">
+                <h3 style="color: var(--blood); font-size: 2.5rem; text-align: center; margin-bottom: 2rem;">TOP DIGGERZY</h3>
+                <div id="battle-leaderboard">Ładowanie rankingu...</div>
+            </div>
+        </div>
+
+        <div id="game-arena" style="display:none; text-align: center;">
+            <h2 id="arena-room-id" style="color:var(--purple); font-size: 2.5rem; margin-bottom: 2rem;"></h2>
+            <div id="host-view" style="display:none; max-width:800px; margin: 0 auto; background:#111; padding:3rem; border:2px solid var(--acid);">
+                <h3 style="color:var(--acid); font-size: 1.5rem;">WYSZUKAJ TRACK DLA PRZECIWNIKA</h3>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <input type="text" class="input-text hover-target" id="yt-search-input" placeholder="Wpisz utwór...">
+                    <button class="btn hover-target" onclick="socket.emit('searchTrack', document.getElementById('yt-search-input').value)">SZUKAJ</button>
+                </div>
+                <div id="yt-search-results-host" style="margin-top:20px; text-align:left;"></div>
+            </div>
+            <div id="guesser-view" style="display:none; max-width:800px; margin: 0 auto; background:#111; padding:3rem; border:2px solid var(--blood);">
+                <h3 style="color: var(--acid); font-size: 3rem; margin-bottom: 0;">SŁUCHAJ!</h3>
+                <h4 style="margin-bottom: 30px; font-size: 1.5rem;">PUNKTY DO ZDOBYCIA: <span id="points-val" style="color:var(--blood)">1000</span></h4>
+                <div style="position:relative; width:100%; height:250px; background:#000; margin-bottom: 30px; border: 4px solid var(--purple);">
+                    <div id="yt-player" style="position:absolute; width:100%; height:100%; opacity:0; pointer-events:none;"></div>
+                    <div style="position:absolute; width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:var(--acid); font-size:2rem; font-weight:bold; font-family:'Syne'">AUDIO ONLY</div>
+                </div>
+                <button class="btn hover-target" id="btn-play-audio" style="width:100%; font-size: 1.5rem; padding: 1rem;" onclick="startListening()" disabled>ŁADOWANIE...</button>
+                <button class="btn hover-target" id="btn-stop-audio" style="width:100%; background:var(--blood); color:#fff; display:none; font-size: 1.5rem; padding: 1rem;" onclick="stopAndGuess()">ZNAM TO!</button>
+                <div id="guess-form" style="display:none; margin-top:30px; padding-top:30px; border-top:2px dashed #555;">
+                    <p style="color:var(--acid); font-size: 1.2rem; font-family:'Syne'; font-weight:bold;">CZAS: <span id="countdown-val">30</span>s</p>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" class="input-text hover-target" id="guess-search-input" placeholder="Wyszukaj odpowiedź...">
+                        <button class="btn hover-target" onclick="socket.emit('searchTrack', document.getElementById('guess-search-input').value)">SZUKAJ</button>
+                    </div>
+                    <div id="yt-search-results-guesser" style="margin-top:20px; text-align:left;"></div>
+                </div>
             </div>
         </div>
     </main>
 
     <button id="ai-trigger-btn" class="hover-target" onclick="toggleAI()">DIGGER_AI</button>
     <div id="digger-ai">
-        <div class="ai-header"><span style="color: var(--bg-deep);">DIGGER_AI (GPT-4o)</span><span style="cursor:pointer;" class="hover-target" onclick="toggleAI()">[ X ]</span></div>
-        <div class="ai-messages" id="ai-chat-box"><div class="ai-msg">MÓZG ONLINE. Co tam, mordo? Pytaj o rap.</div></div>
-        <div class="ai-input-container"><input type="text" class="ai-input hover-target" id="ai-input-field" placeholder="Napisz do AI..." onkeypress="handleAIChat(event)"></div>
+        <div class="ai-header">
+            DIGGER_AI
+            <span class="hover-target" onclick="toggleAI()" style="cursor:pointer; color:var(--bg)">[ X ]</span>
+        </div>
+        <div class="ai-messages" id="ai-chat-box">
+            <div style="color:var(--acid)"><b>AI:</b> Siema. Czego szukasz w podziemiu?</div>
+        </div>
+        <div class="ai-input-container">
+            <input type="text" class="ai-input hover-target" id="ai-input-field" placeholder="Pisz tutaj..." onkeypress="handleAIChat(event)">
+        </div>
     </div>
 
     <script>
-        const cursor = document.getElementById('cursor'); let mX = 0, mY = 0, cX = 0, cY = 0;
-        document.addEventListener('mousemove', e => { mX = e.clientX; mY = e.clientY; });
-        function loop() { cX += (mX - cX) * 0.15; cY += (mY - cY) * 0.15; cursor.style.left = cX + 'px'; cursor.style.top = cY + 'px'; requestAnimationFrame(loop); } loop();
-        document.body.addEventListener('mouseover', e => { if(e.target.closest('.hover-target') || e.target.closest('button')) cursor.classList.add('hovering'); });
-        document.body.addEventListener('mouseout', e => { if(e.target.closest('.hover-target') || e.target.closest('button')) cursor.classList.remove('hovering'); });
+        // JS DLA KURSORA
+        const cursor = document.getElementById('cursor'); 
+        let mX = 0, mY = 0, cX = 0, cY = 0;
+        
+        document.addEventListener('mousemove', e => { 
+            mX = e.clientX; 
+            mY = e.clientY; 
+        });
+        
+        function loop() { 
+            cX += (mX - cX) * 0.15; 
+            cY += (mY - cY) * 0.15; 
+            cursor.style.left = cX + 'px'; 
+            cursor.style.top = cY + 'px'; 
+            requestAnimationFrame(loop); 
+        } 
+        loop();
+        
+        document.body.addEventListener('mouseover', e => { 
+            if(e.target.closest('.hover-target') || e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.closest('.card')) {
+                cursor.classList.add('hovering'); 
+            }
+        });
+        
+        document.body.addEventListener('mouseout', e => { 
+            if(e.target.closest('.hover-target') || e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.closest('.card')) {
+                cursor.classList.remove('hovering'); 
+            }
+        });
 
-        function showNotification(msg, isError = false) {
-            const notif = document.getElementById('ui-notification'); notif.innerText = msg;
-            notif.style.background = isError ? 'var(--accent-blood)' : 'var(--accent-acid)';
-            notif.style.color = isError ? '#fff' : 'var(--bg-deep)';
-            notif.style.display = 'block'; setTimeout(() => notif.style.display = 'none', 3000);
+        const socket = io();
+        let database = {};
+        let currentUser = localStorage.getItem('crate_user');
+        let currentArticleId = null;
+        let previousView = 'latest';
+        let currentView = 'latest';
+
+        // ================= KONWERTER CZASU =================
+        function formatCardDate(ts) {
+            if(!ts) return "";
+            const d = new Date(ts);
+            const m = ["STYCZNIA", "LUTEGO", "MARCA", "KWIETNIA", "MAJA", "CZERWCA", "LIPCA", "SIERPNIA", "WRZEŚNIA", "PAŹDZIERNIKA", "LISTOPADA", "GRUDNIA"];
+            return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()}`;
         }
 
-        let db = {}; 
-        let socket;
-        try { socket = io(); } catch(e) { console.warn("Brak połączenia na żywo."); }
-
-        // ODBIERANIE POWIADOMIEŃ NA ŻYWO!
-        if(socket) {
-            socket.on('newArticleAdded', (data) => {
-                const alertBox = document.getElementById('live-alert');
-                document.getElementById('alert-title').innerText = data.title;
-                document.getElementById('alert-desc').innerText = data.snippet;
-                alertBox.classList.add('show');
-                
-                // Automatyczne odświeżenie kafelków w tle
-                loadDatabaseSilent(); 
-
-                setTimeout(() => { alertBox.classList.remove('show'); }, 8000);
-            });
-        }
-
-        async function loadDatabaseSilent() {
-            try {
-                const response = await fetch('/api/articles?_t=' + new Date().getTime());
-                db = await response.json();
-                const hash = window.location.hash.replace('#', '') || 'latest';
-                if(hash === 'latest') renderSection('latest-grid', 'news');
-                if(hash === 'leaks') renderSection('leaks-grid', 'leak');
-                if(hash === 'archive') renderSection('archive-grid', 'archive');
-            } catch (err) {}
-        }
-
-        async function loadDatabase() {
-            try {
-                const response = await fetch('/api/articles?_t=' + new Date().getTime());
-                if(!response.ok) throw new Error("Błąd");
-                db = await response.json();
-            } catch (err) {}
-            const hash = window.location.hash.replace('#', '') || 'latest';
-            navigate(hash);
-        }
-
-        function renderSection(sectionId, filterCategory, searchQuery = '') {
-            const grid = document.getElementById(sectionId); if(!grid) return;
-            grid.innerHTML = ''; 
-            
-            if(!db || Object.keys(db).length === 0) {
-                grid.innerHTML = '<h3 style="grid-column: span 12; padding: 2rem; color: var(--accent-acid);">Brak danych.</h3>';
-                return;
+        // ================= NAWIGACJA Z PAMIĘCIĄ =================
+        function navigate(id) {
+            if (currentView !== 'article' && id === 'article') {
+                previousView = currentView;
+            } else if (id !== 'article') {
+                currentView = id; 
             }
 
-            const query = searchQuery.toLowerCase();
-            let articles = Object.entries(db).map(([k, v]) => ({ key: k, ...v }));
-            articles.reverse(); let isFirstNewsRendered = false;
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + id).classList.add('active');
+            window.scrollTo(0,0);
+            
+            if(id === 'battle') fetchLeaderboard();
+            if(id === 'archive') renderArchive();
+            if(id !== 'article') currentArticleId = null;
+        }
 
-            articles.forEach((item) => {
-                if (filterCategory === 'news' && item.category === 'archive') return;
-                if (filterCategory === 'leak' && item.category !== 'leak') return;
-                if (filterCategory !== 'all' && filterCategory !== 'news' && filterCategory !== 'leak' && filterCategory !== 'archive' && item.category !== filterCategory) return;
-                
-                if (item.title && (item.title.toLowerCase().includes(query) || item.snippet.toLowerCase().includes(query) || (item.searchTags && item.searchTags.toLowerCase().includes(query)))) {
-                    const tagCat = item.category === 'leak' ? '<span class="tag" style="background:var(--accent-blood);">LEAK</span>' : '';
-                    let cardClass = 'card-wide'; let featuredLabel = '';
+        function goBack() {
+            navigate(previousView || 'latest');
+        }
+
+        // ================= AUTH LOGIC =================
+        function updateNavAuth() {
+            const btn = document.getElementById('auth-display');
+            if(currentUser) {
+                const av = localStorage.getItem('crate_avatar') || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23dbff00%22/></svg>';
+                btn.innerHTML = `<img src="${av}" class="nav-avatar"> <span>${currentUser}</span>`;
+                btn.style.background = 'transparent'; btn.style.border = 'none'; btn.style.color = 'var(--paper)';
+                document.getElementById('comment-auth-gate').style.display = 'block';
+                document.getElementById('comment-login-gate').style.display = 'none';
+            } else {
+                btn.innerHTML = 'ZALOGUJ'; btn.style.background = 'var(--acid)'; btn.style.color = '#000';
+                document.getElementById('comment-auth-gate').style.display = 'none';
+                document.getElementById('comment-login-gate').style.display = 'block';
+            }
+        }
+
+        function handleProfileClick() {
+            if(currentUser) { 
+                loadProfileData(); 
+                navigate('profile'); 
+            } else {
+                navigate('auth');
+            }
+        }
+
+        async function register() {
+            const email = document.getElementById('reg-email').value;
+            const nick = document.getElementById('reg-nick').value;
+            const p1 = document.getElementById('reg-pass1').value;
+            const p2 = document.getElementById('reg-pass2').value;
+            const msg = document.getElementById('reg-msg');
+            
+            if(!email || !nick || !p1 || !p2) return msg.innerText = "Wypełnij wszystkie pola!";
+            if(p1 !== p2) { msg.style.color = "var(--blood)"; return msg.innerText = "Błąd: Hasła nie są identyczne!"; }
+            
+            const specialCharPattern = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+            if(p1.length < 7 || !specialCharPattern.test(p1)) {
+                msg.style.color = "var(--blood)";
+                return msg.innerText = "Błąd: Hasło musi mieć min. 7 znaków i 1 znak specjalny!";
+            }
+            
+            const r = await fetch('/api/register', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({email, username:nick, password:p1}) 
+            });
+            const d = await r.json(); 
+            
+            if(d.success) {
+                msg.style.color = "var(--acid)";
+                document.getElementById('email-verify-box').style.display = 'block';
+                document.getElementById('sim-verify-btn').onclick = () => verifyEmail(nick);
+                msg.innerText = d.msg;
+            } else {
+                msg.style.color = "var(--blood)";
+                msg.innerText = d.msg;
+            }
+        }
+
+        async function verifyEmail(nick) {
+            const r = await fetch('/api/verify', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({username:nick}) 
+            });
+            const d = await r.json();
+            document.getElementById('email-verify-box').style.display = 'none';
+            document.getElementById('reg-msg').innerText = d.msg;
+        }
+
+        async function login() {
+            const r = await fetch('/api/login', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({
+                    login: document.getElementById('login-user').value, 
+                    password: document.getElementById('login-pass').value
+                }) 
+            });
+            const d = await r.json();
+            document.getElementById('login-msg').innerText = d.msg;
+            
+            if(d.success) {
+                localStorage.setItem('crate_user', d.user.username); 
+                localStorage.setItem('crate_avatar', d.user.avatar);
+                currentUser = d.user.username; 
+                updateNavAuth(); 
+                fetchLeaderboard(); 
+                setTimeout(() => navigate('latest'), 1000);
+            }
+        }
+
+        function logout() { 
+            localStorage.clear(); 
+            currentUser = null; 
+            updateNavAuth(); 
+            navigate('latest'); 
+        }
+
+        async function loadProfileData() {
+            const r = await fetch('/api/user/' + currentUser); 
+            const d = await r.json();
+            if(d.success) {
+                document.getElementById('prof-username').innerText = d.user.username;
+                document.getElementById('prof-points').innerText = d.user.points + " PKT";
+                if(d.user.avatar) document.getElementById('prof-avatar-img').src = d.user.avatar;
+            }
+        }
+
+        async function fetchLeaderboard() {
+            const r = await fetch('/api/leaderboard'); 
+            const data = await r.json();
+            let html = ''; 
+            data.forEach((u, i) => { 
+                html += `<div class="lb-item"><span>${i+1}. <strong>${u.username}</strong></span> <span style="color:var(--acid)">${u.points} PKT</span></div>`; 
+            });
+            document.getElementById('battle-leaderboard').innerHTML = html;
+        }
+
+        // ================= WIELE ARTYKUŁÓW I DATY =================
+        async function load() {
+            const r = await fetch('/api/articles?t=' + Date.now());
+            database = await r.json();
+            renderLatest('grid-latest', 'news'); 
+            renderLatest('grid-leaks', 'leak');
+            renderArchive(); 
+            if(currentArticleId) refreshArticleComments(currentArticleId);
+        }
+
+        function renderLatest(id, cat) {
+            const grid = document.getElementById(id); 
+            if(!grid) return; 
+            grid.innerHTML = ''; 
+            let isFirst = true;
+            
+            let sortedArticles = Object.entries(database).sort((a, b) => {
+                const timeA = a[1].timestamp || 0; 
+                const timeB = b[1].timestamp || 0;
+                return timeB - timeA; 
+            });
+
+            sortedArticles.forEach(([k, v]) => {
+                let show = false;
+                if(cat === 'news' && (v.category === 'news' || v.category === 'leak')) show = true;
+                else if (v.category === cat) show = true;
+
+                if(show) {
+                    const dt = v.timestamp ? formatCardDate(v.timestamp) : (v.date || '');
                     
-                    if (filterCategory === 'news' && !isFirstNewsRendered && !searchQuery) {
-                        cardClass = 'card-hottest'; featuredLabel = '<span class="tag" style="background:var(--accent-acid); color:#000;">🔥 HOTTEST DROP</span>';
-                        isFirstNewsRendered = true;
-                    }
-                    grid.innerHTML += `<article class="bento-card ${cardClass} hover-target" onclick="navigate('article', '${item.key}')">
-                        <div style="display:flex; gap:10px; flex-wrap: wrap;">${featuredLabel}<span class="tag ${item.region === 'PL' ? 'pl' : 'us'}">${item.region} SCENA</span> ${tagCat}</div>
-                        <h3>${item.title}</h3><p>${item.snippet}</p></article>`;
+                    // WŁAŚCIWA DATA NA KAFELKU
+                    const dateTagHTML = dt ? `<span class="date-tag">${dt}</span>` : '';
+                    
+                    const tag = `<span class="tag">${v.region} SCENA</span>`;
+                    const cl = (cat === 'news' && isFirst) ? 'card card-hottest' : 'card';
+                    isFirst = false;
+                    
+                    grid.innerHTML += `
+                    <div class="${cl} hover-target" onclick="show('${k}')">
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; align-items:center;">
+                            ${tag}${dateTagHTML}
+                        </div>
+                        <h3>${v.title}</h3>
+                        <p>${v.snippet}</p>
+                    </div>`;
                 }
             });
         }
 
-        function filterArchive() { renderSection('archive-grid', 'archive', document.getElementById('archive-search').value); }
-        
-        function navigate(viewId, articleId = null) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            if(viewId === 'article' && articleId && db[articleId]) {
-                const data = db[articleId];
-                document.getElementById('article-content').innerHTML = `<div class="article-header"><div style="margin-bottom: 1rem;"><span class="tag ${data.region === 'PL' ? 'pl' : 'us'}">${data.region} SCENA</span></div><h1 class="article-h1">${data.title}</h1></div><div class="article-body">${data.content}</div>`;
-                document.getElementById('view-article').classList.add('active');
-            } else { 
-                document.getElementById(`view-${viewId}`).classList.add('active');
-                if(viewId === 'latest') renderSection('latest-grid', 'news');
-                if(viewId === 'archive') renderSection('archive-grid', 'archive');
-                if(viewId === 'leaks') renderSection('leaks-grid', 'leak');
+        // ================= KARUZELA W ARCHIWUM =================
+        let currentArchiveSlide = 0;
+        let totalArchiveSlides = 0;
+
+        function renderArchive() {
+            const query = document.getElementById('archive-search').value.toLowerCase();
+            const track = document.getElementById('archive-track');
+            track.innerHTML = '';
+            
+            let sortedArticles = Object.entries(database).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
+            
+            let filtered = sortedArticles.filter(([k, v]) => {
+                return (v.title.toLowerCase().includes(query) || (v.searchTags && v.searchTags.toLowerCase().includes(query)));
+            });
+
+            const chunkSize = 6;
+            totalArchiveSlides = Math.ceil(filtered.length / chunkSize);
+            
+            if(totalArchiveSlides === 0) { 
+                track.innerHTML = '<p style="font-family:Syne; font-size:1.5rem;">Brak wyników w archiwum.</p>'; 
+                return; 
             }
-            window.scrollTo(0, 0);
+
+            for (let i = 0; i < filtered.length; i += chunkSize) {
+                const chunk = filtered.slice(i, i + chunkSize);
+                
+                let slideHtml = `<div class="carousel-slide"><div class="bento-grid">`;
+                
+                chunk.forEach(([k, v]) => {
+                    const dt = v.timestamp ? formatCardDate(v.timestamp) : (v.date || '');
+                    const dateTagHTML = dt ? `<span class="date-tag">${dt}</span>` : '';
+                    const tag = `<span class="tag">${v.region} SCENA</span>`;
+                    
+                    slideHtml += `
+                    <div class="card hover-target" onclick="show('${k}')">
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; align-items:center;">
+                            ${tag}${dateTagHTML}
+                        </div>
+                        <h3>${v.title}</h3>
+                        <p>${v.snippet}</p>
+                    </div>`;
+                });
+
+                slideHtml += `</div></div>`;
+                track.innerHTML += slideHtml;
+            }
+            
+            currentArchiveSlide = 0;
+            updateArchiveSlider();
         }
 
+        function slideArchive(dir) {
+            currentArchiveSlide += dir;
+            if (currentArchiveSlide < 0) currentArchiveSlide = 0;
+            if (currentArchiveSlide >= totalArchiveSlides) currentArchiveSlide = totalArchiveSlides - 1;
+            updateArchiveSlider();
+            
+            // Płynne przewijanie do góry po przełączeniu strony
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateArchiveSlider() {
+            const track = document.getElementById('archive-track');
+            track.style.transform = `translateX(-${currentArchiveSlide * 100}%)`;
+        }
+
+        // ================= WIDOK ARTYKUŁU I KOMENTARZE =================
+        function show(id) {
+            currentArticleId = id;
+            const d = database[id];
+            
+            const dt = d.timestamp ? formatCardDate(d.timestamp) : (d.date || '');
+            
+            // ZIELONA DATA (KWASOWA) WEWNĄTRZ ARTYKUŁU JAK NA SCREENIE
+            const dateTag = dt ? `<span class="date-tag" style="color:var(--acid); border-color:var(--acid); margin-left:10px;">${dt}</span>` : '';
+            
+            document.getElementById('art-content').innerHTML = `
+                <div style="margin-bottom:1rem; display:flex; align-items:center;">
+                    <span class="tag">${d.region} SCENA</span>${dateTag}
+                </div>
+                <h1>${d.title}</h1>
+                ${d.content}
+            `;
+            
+            document.getElementById('art-socials').style.display = 'block';
+            document.getElementById('art-likes').innerText = d.likes || 0;
+            document.getElementById('art-dislikes').innerText = d.dislikes || 0;
+            
+            refreshArticleComments(id);
+            navigate('article');
+        }
+
+        function refreshArticleComments(id) {
+            const d = database[id];
+            const commentsBox = document.getElementById('comments-list');
+            commentsBox.innerHTML = '';
+            
+            const comments = d.comments || [];
+            document.getElementById('comments-count').innerText = comments.length;
+            
+            if(comments.length === 0) {
+                commentsBox.innerHTML = '<p style="opacity:0.5; font-family:Syne;">Brak komentarzy. Bądź pierwszy!</p>';
+            } else {
+                comments.forEach(c => {
+                    commentsBox.innerHTML += `
+                    <div class="comment-item">
+                        <div class="comment-meta">
+                            <span>${c.username}</span> 
+                            <span style="opacity:0.5">${c.date}</span>
+                        </div>
+                        <div style="margin-top: 10px;">${c.text}</div>
+                    </div>`;
+                });
+            }
+        }
+
+        async function voteArticle(type) {
+            const r = await fetch(`/api/article/${currentArticleId}/vote`, { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({type}) 
+            });
+            const d = await r.json();
+            
+            if(d.success) {
+                document.getElementById('art-likes').innerText = d.likes;
+                document.getElementById('art-dislikes').innerText = d.dislikes;
+                database[currentArticleId].likes = d.likes; 
+                database[currentArticleId].dislikes = d.dislikes;
+            }
+        }
+
+        async function postComment() {
+            const text = document.getElementById('new-comment-text').value.trim();
+            if(!text) return;
+            
+            const r = await fetch(`/api/article/${currentArticleId}/comment`, { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({username: currentUser, text}) 
+            });
+            
+            const d = await r.json();
+            if(d.success) {
+                document.getElementById('new-comment-text').value = '';
+                database[currentArticleId].comments = d.comments;
+                refreshArticleComments(currentArticleId);
+            }
+        }
+
+        // ================= DIGGER AI Z ANIMACJĄ =================
         function toggleAI() {
-            const aiBox = document.getElementById('digger-ai'); const btn = document.getElementById('ai-trigger-btn');
-            if(aiBox.classList.contains('open')) { aiBox.classList.remove('open'); btn.classList.remove('hidden'); } 
-            else { aiBox.classList.add('open'); btn.classList.add('hidden'); document.getElementById('ai-input-field').focus(); }
+            const aiBox = document.getElementById('digger-ai');
+            if(aiBox.classList.contains('open')) {
+                aiBox.classList.remove('open');
+            } else {
+                aiBox.classList.add('open'); 
+                document.getElementById('ai-input-field').focus(); 
+            }
         }
 
         async function handleAIChat(e) {
-            if (e.key === 'Enter') {
-                const input = document.getElementById('ai-input-field'); const val = input.value.trim(); if(!val) return;
-                const chatBox = document.getElementById('ai-chat-box');
-                chatBox.innerHTML += `<div class="ai-msg user">${val}</div>`; input.value = '';
-                const loadingId = "msg-" + Date.now();
-                chatBox.innerHTML += `<div class="ai-msg" id="${loadingId}" style="opacity: 0.5;">[Przetwarzanie danych GPT-4o...]</div>`;
-                chatBox.scrollTop = chatBox.scrollHeight;
+            if(e.key === 'Enter') {
+                const box = document.getElementById('ai-chat-box'); 
+                const v = e.target.value.trim(); 
+                if(!v) return;
+                
+                e.target.value = '';
+                
+                // Wiadomość użytkownika
+                box.innerHTML += `<div><b style="color:#fff">TY:</b> ${v}</div>`;
+                box.scrollTop = box.scrollHeight;
+                
+                // Animacja "pisania"
+                const typingId = 'typing-' + Date.now();
+                box.innerHTML += `<div id="${typingId}" style="color:var(--acid); opacity:0.7;" class="ai-typing-blink"><b>AI:</b> <i>analizuje...</i></div>`;
+                box.scrollTop = box.scrollHeight;
+                
                 try {
-                    const response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: val }) });
-                    const data = await response.json(); 
-                    document.getElementById(loadingId).innerHTML = data.reply; 
-                    document.getElementById(loadingId).style.opacity = 1;
-                } catch (err) { 
-                    document.getElementById(loadingId).innerHTML = "Błąd na łączach!"; 
-                    document.getElementById(loadingId).style.color = "var(--accent-blood)"; 
+                    const r = await fetch('/api/chat', { 
+                        method:'POST', 
+                        headers:{'Content-Type':'application/json'}, 
+                        body:JSON.stringify({message:v}) 
+                    });
+                    
+                    const d = await r.json(); 
+                    
+                    // Usunięcie animacji
+                    const typingEl = document.getElementById(typingId);
+                    if(typingEl) typingEl.remove();
+                    
+                    // Właściwa odpowiedź
+                    box.innerHTML += `<div style="color:var(--acid)"><b>AI:</b> ${d.reply}</div>`;
+                    box.scrollTop = box.scrollHeight;
+                } catch(err) {
+                    const typingEl = document.getElementById(typingId);
+                    if(typingEl) typingEl.remove();
+                    box.innerHTML += `<div style="color:var(--blood)"><b>AI:</b> Błąd połączenia. Spróbuj jeszcze raz.</div>`;
                 }
-                chatBox.scrollTop = chatBox.scrollHeight;
             }
         }
 
-        let deckAId = null; let deckBId = null;
-        let ytDeckA = null; let ytDeckB = null;
+        socket.on('newArticleAdded', (d) => {
+            const a = document.getElementById('live-alert');
+            document.getElementById('alert-title').innerText = d.title;
+            a.classList.add('show'); 
+            load();
+            setTimeout(() => a.classList.remove('show'), 6000);
+        });
 
-        function searchMixer(deck) {
-            const query = document.getElementById(`mixer-search-${deck.toLowerCase()}`).value;
-            if(!query) return; document.getElementById(`mixer-results-${deck.toLowerCase()}`).innerHTML = '<p>Szukam...</p>';
-            if(socket) socket.emit('searchTrackMixer', { query: query, deck: deck });
-        }
-
-        if(socket) {
-            socket.on('searchResultsMixer', (data) => {
-                const container = document.getElementById(`mixer-results-${data.deck.toLowerCase()}`); 
-                container.innerHTML = '';
-                if(data.error || data.videos.length === 0) {
-                    return container.innerHTML = '<p style="color:var(--accent-blood);">Brak wyników z YouTube.</p>';
-                }
-                data.videos.forEach(vid => {
-                    const safeTitle = vid.title.replace(/'/g, "\\'").replace(/"/g, '"');
-                    container.innerHTML += `<div class="yt-result-item hover-target" onclick="loadDeckReady('${data.deck}', '${vid.id}', '${safeTitle}')" style="cursor:pointer; font-size:0.9rem;"><img src="${vid.thumb}" style="width: 60px; height: 34px;"> <span>${vid.title}</span></div>`;
-                });
+        // ================= MIXER RAVE.DJ STYLE =================
+        let playerMixerA = null; 
+        let playerMixerB = null; 
+        let deckAId = null; 
+        let deckBId = null; 
+        let isMixerPlaying = false;
+        
+        function onYouTubeIframeAPIReady() { ytAPIReady = true; }
+        
+        socket.on('searchResultsMixer', (d) => {
+            const container = document.getElementById('res' + d.deck); 
+            container.innerHTML = '';
+            d.videos.forEach(v => { 
+                container.innerHTML += `
+                <div style="padding:10px; border:1px dashed var(--acid); margin-bottom:5px; cursor:pointer; color:var(--paper)" class="hover-target" onclick="loadDeckMixer('${d.deck}', '${v.id}', '${v.title.replace(/'/g,"")}')">
+                    ${v.title}
+                </div>`; 
             });
-        }
+        });
 
-        function loadDeckReady(deck, ytId, title) {
-            document.getElementById(`mixer-results-${deck.toLowerCase()}`).innerHTML = '';
-            document.getElementById(`cover-${deck.toLowerCase()}`).innerHTML = `<span style="font-size:1rem;">ZAŁADOWANO:</span><br><span style="color:#fff">${title}</span>`;
-            if(deck === 'A') deckAId = ytId; else deckBId = ytId;
-            if(deckAId && deckBId) {
-                document.getElementById('btn-create-mashup').disabled = false;
-                document.getElementById('btn-create-mashup').innerText = "GENERUJ MASHUP";
+        function loadDeckMixer(deck, id, title) {
+            document.getElementById('res' + deck).innerHTML = `<h4 style="color:var(--acid)">WYBRANO: ${title}</h4>`;
+            if (deck === 'A') { deckAId = id; } else { deckBId = id; }
+            
+            if (deckAId && deckBId) {
+                document.getElementById('mixer-play-btn').disabled = false;
+                document.getElementById('mixer-status').innerText = "TRACKI ZGOTOWANE. ODPALAJ GENERATOR.";
             }
         }
 
         function generateMashup() {
-            document.getElementById('btn-create-mashup').style.display = 'none';
-            document.getElementById('mashup-loading').style.display = 'block';
-            let progress = 0; const statusText = document.getElementById('mashup-status-text');
-            const fill = document.getElementById('mashup-progress');
+            document.getElementById('mixer-play-btn').style.display = 'none';
+            document.getElementById('mix-progress-container').style.display = 'block';
+            
+            let progress = 0; 
+            const status = document.getElementById('mixer-status');
+            const bar = document.getElementById('mix-progress');
 
-            const interval = setInterval(() => {
-                progress += 5; fill.style.width = progress + '%';
-                if(progress === 30) statusText.innerText = "EKSTRAKCJA WOKALU...";
-                if(progress === 60) statusText.innerText = "DOPASOWYWANIE BPM I TONACJI...";
-                if(progress === 90) statusText.innerText = "RENDEROWANIE MASHUPU...";
+            if(playerMixerA) playerMixerA.destroy();
+            if(playerMixerB) playerMixerB.destroy();
+            
+            playerMixerA = new YT.Player('mixer-yt-a', { videoId: deckAId, playerVars: { controls: 0, autoplay: 0 } });
+            playerMixerB = new YT.Player('mixer-yt-b', { videoId: deckBId, playerVars: { controls: 0, autoplay: 0 } });
+
+            const int = setInterval(() => {
+                progress += 5; 
+                bar.style.width = progress + '%';
+                
+                if(progress === 25) status.innerText = "EKSTRAKCJA WOKALU (STEM SEPARATION)...";
+                if(progress === 60) status.innerText = "DOPASOWYWANIE BPM I TONACJI...";
+                if(progress === 90) status.innerText = "RENDEROWANIE MASHUPU...";
+                
                 if(progress >= 100) {
-                    clearInterval(interval);
-                    statusText.innerText = "MASHUP GOTOWY! ODTWARZANIE...";
-                    playMashupTogether();
+                    clearInterval(int);
+                    document.getElementById('mix-progress-container').style.display = 'none';
+                    status.innerText = "MASHUP ODTWARZANY. (AUDIO SYNCED)";
+                    document.getElementById('mixer-pause-btn').style.display = 'block';
+                    
+                    setTimeout(() => {
+                        playerMixerA.setVolume(70); 
+                        playerMixerB.setVolume(100);
+                        playerMixerA.playVideo(); 
+                        playerMixerB.playVideo();
+                        isMixerPlaying = true;
+                    }, 1000);
                 }
             }, 300);
         }
 
-        function playMashupTogether() {
-            document.getElementById('cover-a').style.display = 'none';
-            document.getElementById('cover-b').style.display = 'none';
-            ytDeckA = new YT.Player('yt-deck-a', { height: '100%', width: '100%', videoId: deckAId, playerVars: { 'autoplay': 1, 'controls': 0 }, events: { 'onReady': (e) => e.target.setVolume(100) } });
-            ytDeckB = new YT.Player('yt-deck-b', { height: '100%', width: '100%', videoId: deckBId, playerVars: { 'autoplay': 1, 'controls': 0 }, events: { 'onReady': (e) => e.target.setVolume(80) } });
+        function toggleMixerPlay() {
+            const btn = document.getElementById('mixer-pause-btn');
+            
+            if(isMixerPlaying) { 
+                playerMixerA.pauseVideo(); 
+                playerMixerB.pauseVideo(); 
+                btn.innerText = "PLAY AUDIO"; 
+                btn.style.background = "var(--acid)"; 
+                btn.style.color = "#000"; 
+                isMixerPlaying = false; 
+            } else { 
+                playerMixerA.playVideo(); 
+                playerMixerB.playVideo(); 
+                btn.innerText = "PAUSE AUDIO"; 
+                btn.style.background = "var(--blood)"; 
+                btn.style.color = "#fff"; 
+                isMixerPlaying = true; 
+            }
         }
 
-        let myRoomId = null; let isHost = false; let ytPlayerBattle = null; let ytAPIReady = false; let points = 1000; let guessTime = 30; let scoreInterval, guessInterval;
-        function onYouTubeIframeAPIReady() { ytAPIReady = true; }
-        function createRoom() { const alias = document.getElementById('host-name').value; if(!alias) return showNotification("Wpisz alias!"); isHost = true; if(socket) socket.emit('createRoom', { alias, password: document.getElementById('host-pwd').value }); }
-        function joinRoom(roomId, isLocked) { const myAlias = document.getElementById('join-alias').value; if(!myAlias) return showNotification("Wpisz swój alias!"); let pwd = null; if(isLocked) { pwd = window.prompt("Hasło:"); if(!pwd) return; } if(socket) socket.emit('joinRoom', { roomId: roomId, alias: myAlias, password: pwd }); }
-        if(socket) {
-            socket.on('updateRooms', (roomsObj) => {
-                const list = document.getElementById('live-rooms-list'); list.innerHTML = ''; const rooms = Object.values(roomsObj); if(rooms.length===0) return list.innerHTML = '<p style="opacity:0.5;">Cisza.</p>';
-                rooms.forEach(r => { list.innerHTML += `<div class="room-item hover-target"><div>${r.isLocked?'<span style="background:var(--accent-blood);">LOCKED</span>':'<span style="background:var(--accent-acid); color:#000;">OPEN</span>'} <strong>${r.id}</strong></div><button class="brutal-btn hover-target" style="padding:0.5rem;" onclick="joinRoom('${r.id}', ${r.isLocked})">DOŁĄCZ</button></div>`; });
+        // ================= AUX BATTLE =================
+        let myRoomId = null, isHost = false, ytPlayerBattle = null, ytAPIReady = false, points = 1000, guessTime = 30, scoreInterval, guessInterval;
+        
+        function createRoom() { 
+            const alias = currentUser || document.getElementById('host-name').value || "Host"; 
+            isHost = true; 
+            socket.emit('createRoom', { alias, password: "" }); 
+        }
+        
+        function joinRoom(roomId) { 
+            const alias = currentUser || document.getElementById('join-alias').value || "Gracz"; 
+            socket.emit('joinRoom', { roomId, alias, password: "" }); 
+        }
+        
+        socket.on('updateRooms', (roomsObj) => {
+            const list = document.getElementById('live-rooms-list'); 
+            list.innerHTML = ''; 
+            const rooms = Object.values(roomsObj); 
+            
+            if(rooms.length===0) return list.innerHTML = '<p style="opacity:0.5;">Brak otwartych sesji.</p>';
+            
+            rooms.forEach(r => { 
+                list.innerHTML += `
+                <div class="room-item">
+                    <span><strong>${r.id}</strong> (Host: ${r.hostName})</span>
+                    <button class="btn hover-target" style="padding:8px 15px;" onclick="joinRoom('${r.id}')">GRAJ</button>
+                </div>`; 
             });
-            socket.on('roomCreated', (r) => { myRoomId = r.id; document.getElementById('lobby-ui').style.display='none'; document.getElementById('game-arena').style.display='block'; document.getElementById('arena-room-id').innerText=r.id; });
-            socket.on('gameStarted', (r) => { document.getElementById('lobby-ui').style.display='none'; document.getElementById('game-arena').style.display='block'; document.getElementById('arena-room-id').innerText=r.id; document.getElementById('game-controls').style.display='block'; if (isHost) { document.getElementById('host-view').style.display='block'; } else { myRoomId = r.id; } });
-            socket.on('searchResults', (v) => { const c = isHost?document.getElementById('yt-search-results-host'):document.getElementById('yt-search-results-guesser'); c.innerHTML=''; v.forEach(vid => { c.innerHTML += `<div class="yt-result-item hover-target" onclick="${isHost?`selectAndSubmitTrack('${vid.id}','${vid.title.replace(/'/g,"\\'")}')`:`selectGuessTrack('${vid.id}','${vid.title.replace(/'/g,"\\'")}')`}"><img src="${vid.thumb}" style="width:100px;"><div>${vid.title}</div></div>`; }); });
-            socket.on('trackPlaying', (r) => { if(!isHost) { document.getElementById('guesser-view').style.display='block'; if(ytPlayerBattle){ytPlayerBattle.loadVideoById(r.currentTrack);ytPlayerBattle.pauseVideo();document.getElementById('btn-play-audio').disabled=false;}else{ytPlayerBattle = new YT.Player('yt-player',{height:'100%',width:'100%',videoId:r.currentTrack,events:{'onReady':()=>{document.getElementById('btn-play-audio').disabled=false;}}});} } else { document.getElementById('host-view').style.display='none'; } });
-            socket.on('gameOver', (d) => { clearInterval(scoreInterval); clearInterval(guessInterval); if(ytPlayerBattle) ytPlayerBattle.stopVideo(); alert(d.msg); location.reload(); });
+        });
+        
+        socket.on('roomCreated', (r) => { 
+            myRoomId = r.id; 
+            document.getElementById('lobby-ui').style.display='none'; 
+            document.getElementById('game-arena').style.display='block'; 
+            document.getElementById('arena-room-id').innerText="SESJA: " + r.id; 
+        });
+        
+        socket.on('gameStarted', (r) => { 
+            document.getElementById('lobby-ui').style.display='none'; 
+            document.getElementById('game-arena').style.display='block'; 
+            document.getElementById('arena-room-id').innerText="SESJA: " + r.id; 
+            document.getElementById('game-controls').style.display='block'; 
+            if (isHost) document.getElementById('host-view').style.display='block'; 
+            else myRoomId = r.id; 
+        });
+        
+        socket.on('searchResults', (v) => { 
+            const c = isHost ? document.getElementById('yt-search-results-host') : document.getElementById('yt-search-results-guesser'); 
+            c.innerHTML=''; 
+            v.forEach(vid => { 
+                c.innerHTML += `
+                <div class="yt-result-item hover-target" onclick="${isHost ? `selectAndSubmitTrack('${vid.id}','${vid.title.replace(/'/g,"\\'")}')` : `selectGuessTrack('${vid.id}','${vid.title.replace(/'/g,"\\'")}')`}">
+                    <img src="${vid.thumb}" style="width:80px; margin-right:15px;">
+                    <span>${vid.title}</span>
+                </div>`; 
+            });
+        });
+        
+        function selectAndSubmitTrack(id, title) { 
+            socket.emit('submitTrack', { roomId: myRoomId, ytId: id, title: title }); 
+            document.getElementById('yt-search-results-host').innerHTML = '<h3 style="color:var(--acid);">WYSŁANE DO RYWALA!</h3>'; 
         }
-        function searchYouTube(role) { socket.emit('searchTrack', document.getElementById(role==='host'?'yt-search-input':'guess-search-input').value); }
-        function selectAndSubmitTrack(id, title) { socket.emit('submitTrack', { roomId: myRoomId, ytId: id, title: title }); document.getElementById('yt-search-results-host').innerHTML = '<h3>WYSŁANE!</h3>'; }
-        function selectGuessTrack(id, title) { clearInterval(guessInterval); socket.emit('makeGuess', { roomId: myRoomId, ytId: id, title: title, points: points }); }
-        function startListening() { document.getElementById('btn-play-audio').style.display='none'; document.getElementById('btn-stop-audio').style.display='block'; ytPlayerBattle.playVideo(); scoreInterval=setInterval(()=>{points-=50;document.getElementById('points-val').innerText=points;if(points<=500)stopAndGuess();},1000); }
-        function stopAndGuess() { clearInterval(scoreInterval); ytPlayerBattle.pauseVideo(); document.getElementById('btn-stop-audio').style.display='none'; document.getElementById('guess-form').style.display='block'; guessInterval=setInterval(()=>{guessTime--;document.getElementById('countdown-val').innerText=guessTime;if(guessTime<=0){clearInterval(guessInterval);socket.emit('makeGuess',{roomId:myRoomId,guess:"timeout"});}},1000); }
-        function notifyTyping() { socket.emit('updateStatus', { roomId: myRoomId, msg: `Rywal pisze... (${guessTime}s)` }); }
+        
+        socket.on('trackPlaying', (r) => { 
+            if(!isHost) { 
+                document.getElementById('guesser-view').style.display='block'; 
+                if(ytPlayerBattle) { 
+                    ytPlayerBattle.loadVideoById(r.currentTrack); 
+                    ytPlayerBattle.pauseVideo(); 
+                    document.getElementById('btn-play-audio').disabled=false; 
+                    document.getElementById('btn-play-audio').innerText="ODTWÓRZ AUDIO"; 
+                } else { 
+                    ytPlayerBattle = new YT.Player('yt-player',{
+                        videoId:r.currentTrack,
+                        events:{'onReady':()=>{
+                            document.getElementById('btn-play-audio').disabled=false; 
+                            document.getElementById('btn-play-audio').innerText="ODTWÓRZ AUDIO";
+                        }}
+                    }); 
+                } 
+            } else { 
+                document.getElementById('host-view').style.display='none'; 
+            } 
+        });
+        
+        function startListening() { 
+            document.getElementById('btn-play-audio').style.display='none'; 
+            document.getElementById('btn-stop-audio').style.display='block'; 
+            ytPlayerBattle.playVideo(); 
+            scoreInterval=setInterval(()=>{
+                points-=50;
+                document.getElementById('points-val').innerText=points;
+                if(points<=500) stopAndGuess();
+            }, 1000); 
+        }
+        
+        function stopAndGuess() { 
+            clearInterval(scoreInterval); 
+            ytPlayerBattle.pauseVideo(); 
+            document.getElementById('btn-stop-audio').style.display='none'; 
+            document.getElementById('guess-form').style.display='block'; 
+            guessInterval=setInterval(()=>{
+                guessTime--;
+                document.getElementById('countdown-val').innerText=guessTime;
+                if(guessTime<=0){
+                    clearInterval(guessInterval);
+                    socket.emit('makeGuess',{roomId:myRoomId,guess:"timeout"});
+                }
+            }, 1000); 
+        }
+        
+        function selectGuessTrack(id, title) { 
+            clearInterval(guessInterval); 
+            socket.emit('makeGuess', { roomId: myRoomId, ytId: id, title: title, points: points }); 
+        }
+        
+        socket.on('gameOver', (d) => { 
+            clearInterval(scoreInterval); 
+            clearInterval(guessInterval); 
+            if(ytPlayerBattle) ytPlayerBattle.stopVideo(); 
+            
+            if (currentUser && currentUser === d.winner && d.points > 0) {
+                socket.emit('claimPoints', { username: currentUser, points: d.points }); 
+            }
+            
+            document.getElementById('overlay-msg').innerHTML = d.msg + "<br><br>Grasz jako: " + (currentUser ? currentUser : "Gość"); 
+            document.getElementById('game-overlay').style.display = 'flex'; 
+        });
 
-        loadDatabase();
+        // INIT
+        window.onload = () => { 
+            updateNavAuth(); 
+            load(); 
+            fetchLeaderboard(); 
+        };
     </script>
 </body>
 </html>
