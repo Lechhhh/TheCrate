@@ -13,12 +13,11 @@ const dbPath = path.join(__dirname, 'database.json');
 const usersPath = path.join(__dirname, 'users.json');
 
 // ==========================================
-// KONFIGURACJA BREVO API (OMIJA BLOKADY RENDER.COM)
+// KONFIGURACJA BREVO API (BEZPIECZNA ZMIENNA)
 // ==========================================
-const BREVO_API_KEY = process.env.BREVO_API_KEY;; // <--- WKLEJ KLUCZ TUTAJ
-const SENDER_EMAIL = 'thecrate.kontakt@gmail.com'; // <--- TWÓJ E-MAIL JEST JUŻ WPISANY
+const BREVO_API_KEY = process.env.BREVO_API_KEY; 
+const SENDER_EMAIL = 'thecrate.kontakt@gmail.com'; 
 
-// Własna funkcja wysyłająca maile z pominięciem SMTP
 async function sendMailAPI(to, subject, htmlContent) {
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
@@ -95,7 +94,7 @@ const defaultDB = {
     "art_04": { 
         "category": "archive", "region": "PL", "timestamp": 1654041600000, 
         "title": "White 2115 i rockstarowy sen", "snippet": "Jak Młody Łajcior połączył trap ze statusem gwiazdy rocka.", 
-        "content": "<p>White 2115 to fenomen, który udowodnił, że nie trzeba być klasycznym raperem, by zdominować listy przebojów w Polsce. Jego wokalne przeloty, mocno przesiąknięte melancholią, złamanym sercem i typowo wakacyjnym vibem, stały się oficjalną ścieżką dźwiękową polskiej młodzieży.</p><p>Jego projekty regularnie pokrywają się diamentem, udowadniając, że muzyka gitarowa w połączeniu z ciężkimi trapowymi bębnami to sprawdzony przepis na komercyjny triumf. Mimo krytyki ze strony purystów, White robi swoje i wypełnia największe festiwalowe hale w kraju po brzegi.</p><br><p class='source-tag'>Źródło: SBM Label / Popkiller</p>", 
+        "content": "<p>White 2115 to fenomen, który udowodnił, że nie trzeba być klasycznym raperem, by zdominować listy przebojów w Polsce. Jego wokalne przeloty, mocno przesiąknięte melancholią, złamanym sercem i typowo wakacyjnym vibem, stały się oficjalną ścieżką dźwiękową polskiej młodzieży.</p><p>Jego projects regularnie pokrywają się diamentem, udowadniając, że muzyka gitarowa w połączeniu z ciężkimi trapowymi bębnami to sprawdzony przepis na komercyjny triumf. Mimo krytyki ze strony purystów, White robi swoje i wypełnia największe festiwalowe hale w kraju po brzegi.</p><br><p class='source-tag'>Źródło: SBM Label / Popkiller</p>", 
         "searchTags": "white 2115 sbm rockstar", "likes": 45, "dislikes": 12, "comments": [] 
     },
     "art_05": { 
@@ -305,7 +304,7 @@ app.post('/api/article/:id/comment', (req, res) => {
 });
 
 // ==========================================
-// REJESTRACJA I LOGOWANIE Z E-MAILEM API
+// REJESTRACJA Z E-MAILEM API
 // ==========================================
 app.post('/api/register', async (req, res) => {
     const { email, username, password } = req.body;
@@ -339,7 +338,6 @@ app.post('/api/register', async (req, res) => {
     `;
 
     try {
-        // WYSYŁKA PRZEZ BREVO API W TLE!
         sendMailAPI(email, 'Witaj w podziemiu! Aktywuj konto na THE CRATE.', emailHTML).catch(err => console.log("Błąd wysyłki powiadomienia (Rejestracja): ", err));
         res.json({ success: true });
     } catch (error) {
@@ -347,7 +345,9 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// ENDPOINT: ODBIERANIE KLIKNIĘCIA Z MAILA I WYSYŁKA POWITANIA
+// ==========================================
+// ENDPOINT: ODBIERANIE KLIKNIĘCIA Z MAILA I BEZPOŚREDNIE PRZEKIEROWANIE
+// ==========================================
 app.get('/api/verify-email', async (req, res) => {
     const { token, user } = req.query;
     let users = safeReadUsers();
@@ -372,21 +372,11 @@ app.get('/api/verify-email', async (req, res) => {
         // Wysyłka drugiego maila (powitalnego) w tle
         sendMailAPI(users[user].email, 'Konto aktywowane! Witamy w THE CRATE.', welcomeHTML).catch(err => console.log("Błąd wysyłki maila powitalnego API: ", err));
         
-        res.send(`
-            <body style="background:#0f0e0d; color:#dbff00; font-family:sans-serif; text-align:center; padding-top:100px;">
-                <h1 style="font-size:40px;">KONTO ZWERYFIKOWANE!</h1>
-                <p style="color:#e2dcd0; font-size:20px;">Możesz się teraz zalogować w systemie THE CRATE.</p>
-                <a href="/" style="display:inline-block; margin-top:30px; background:#e5383b; color:#fff; padding:15px 30px; text-decoration:none; font-weight:bold; text-transform:uppercase;">WRÓĆ NA STRONĘ GŁÓWNĄ</a>
-            </body>
-        `);
+        // Brak podstrony - od razu ładujemy czystą stronę THE CRATE
+        res.redirect('/');
     } else {
-        res.send(`
-            <body style="background:#0f0e0d; color:#e5383b; font-family:sans-serif; text-align:center; padding-top:100px;">
-                <h1 style="font-size:40px;">BŁĄD WERYFIKACJI</h1>
-                <p style="color:#e2dcd0; font-size:20px;">Link aktywacyjny jest nieważny lub konto zostało już aktywowane.</p>
-                <a href="/" style="display:inline-block; margin-top:30px; background:#dbff00; color:#000; padding:15px 30px; text-decoration:none; font-weight:bold; text-transform:uppercase;">WRÓĆ NA STRONĘ GŁÓWNĄ</a>
-            </body>
-        `);
+        // W razie błędu też wracamy na stronę główną, by nie psuć efektu wizualnego
+        res.redirect('/');
     }
 });
 
@@ -477,7 +467,7 @@ io.on('connection', (socket) => {
 });
 
 // ==========================================
-// AUTODIGGER AI - BEZPIECZNE GENEROWANIE NEWSÓW
+// AUTODIGGER AI
 // ==========================================
 const fallbackBank = [
     { title: "Future & Metro Boomin - Złota Era Trapu", snippet: "Duet, który nie potrafi nagrać słabego utworu.", content: "<p>Kiedy Metro Boomin robi bity, a Future wchodzi do kabiny, dzieje się magia. Ich projekty to absolutna esencja atlantskiego trapu, od mrocznych syntezatorów po lodowate flow Plutona.</p><p>Każdy wyciek z ich sesji nagraniowych to natychmiastowy hit w podziemiu. Future udowadnia, że wciąż potrafi wyznaczać nowe standardy toksycznego brzmienia R&B.</p><p>To niesamowite, jak ich chemia ewoluowała od czasów 'Monster'. Żaden inny duet w rapie nie ma takiej powtarzalności w dostarczaniu hitów.</p><br><p class='source-tag'>Źródło: The Crate</p>", searchQuery: "Future official music video", isLeak: false, artist: "Future" }
