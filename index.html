@@ -41,16 +41,13 @@
             text-transform: uppercase; 
         }
         
-        /* ========================================================= */
         /* INTELIGENTNY KURSOR (DZIAŁA TYLKO NA URZĄDZENIACH Z MYSZKĄ) */
-        /* ========================================================= */
         @media (hover: hover) and (pointer: fine) {
             body, a, button, h1, h2, h3, p, div, span { cursor: none !important; }
-            input, textarea { cursor: text !important; } /* W polach tekstowych normalny kursor pisania */
+            input, textarea { cursor: text !important; } 
         }
         
         @media (hover: none), (pointer: coarse) {
-            /* Na ekranach dotykowych całkowicie usuwamy czerwoną kulkę i przywracamy dotyk */
             .custom-cursor { display: none !important; }
             * { cursor: auto !important; }
         }
@@ -106,7 +103,6 @@
         .nav-links a { color: #fff; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: 0.3s;}
         .nav-links a:hover { color: var(--acid); }
         
-        /* PRZYCISK HAMBURGERA DLA TELEFONÓW */
         .menu-toggle {
             display: none;
             font-size: 2.2rem;
@@ -164,7 +160,6 @@
         .tag { font-family: 'Syne'; font-size: 0.75rem; font-weight: 800; background: var(--bg); color: var(--paper); padding: 0.3rem 0.6rem; display: inline-block; margin-bottom: 10px;}
         .card-hottest .tag { background: var(--bg); color: var(--acid); }
         
-        /* DATA NA KAFELKU */
         .date-tag { font-family: 'Syne'; font-size: 0.75rem; font-weight: 800; background: transparent; border: 2px solid #000; color: #000; padding: 0.25rem 0.5rem; display: inline-block; margin-bottom: 10px; text-transform: uppercase;}
         .card-hottest .date-tag { border-color: #fff; color: #fff; border-width: 1px;}
 
@@ -334,7 +329,7 @@
                 <input type="text" id="reg-nick" class="input-text hover-target" placeholder="Twój Nick (Alias)">
                 <input type="password" id="reg-pass1" class="input-text hover-target" placeholder="Hasło">
                 <input type="password" id="reg-pass2" class="input-text hover-target" placeholder="Powtórz Hasło">
-                <button class="btn hover-target" style="background:var(--purple); color:#fff; width: 100%; margin-top: 1rem;" onclick="register()">ZAREJESTRUJ</button>
+                <button id="reg-btn" class="btn hover-target" style="background:var(--purple); color:#fff; width: 100%; margin-top: 1rem;" onclick="register()">ZAREJESTRUJ</button>
                 <p id="reg-msg" style="margin-top: 15px; font-weight: bold;"></p>
             </div>
         </div>
@@ -538,7 +533,6 @@
             }
         });
 
-        // ================= INICJALIZACJA =================
         const socket = io();
         let database = {};
         let currentUser = localStorage.getItem('crate_user');
@@ -625,8 +619,10 @@
             const p1 = document.getElementById('reg-pass1').value;
             const p2 = document.getElementById('reg-pass2').value;
             const msg = document.getElementById('reg-msg');
+            const btn = document.getElementById('reg-btn');
             
             if(!email || !nick || !p1 || !p2) {
+                msg.style.color = "var(--blood)";
                 return msg.innerText = "Wypełnij wszystkie pola!";
             }
             
@@ -641,9 +637,12 @@
                 msg.style.color = "var(--blood)";
                 return msg.innerText = "Błąd: Hasło musi mieć min. 7 znaków i 1 znak specjalny!";
             }
-            
-            msg.style.color = "var(--paper)";
-            msg.innerText = "Wysyłanie maila... proszę czekać.";
+
+            // WYCZYSZCZENIE MAŁEGO NAPISU I ZMIANA PRZYCISKU NA ŁADOWANIE
+            msg.innerText = "";
+            const originalBtnText = btn.innerText;
+            btn.innerText = "ŁADOWANIE...";
+            btn.style.opacity = "0.5";
             
             const r = await fetch('/api/register', { 
                 method:'POST', 
@@ -652,15 +651,18 @@
             });
             const d = await r.json(); 
             
+            // PRZYWRÓCENIE PRZYCISKU
+            btn.innerText = originalBtnText;
+            btn.style.opacity = "1";
+            
             if(d.success) {
-                // CZYSZCZENIE PÓL FORMULARZA
+                // CZYSZCZENIE PÓL FORMULARZA PO ZAREJESTROWANIU
                 document.getElementById('reg-email').value = '';
                 document.getElementById('reg-nick').value = '';
                 document.getElementById('reg-pass1').value = '';
                 document.getElementById('reg-pass2').value = '';
-                msg.innerText = ''; 
                 
-                // WYŚWIETLENIE DUŻEGO ALERTY
+                // WYŚWIETLENIE DUŻEGO ALERTY (MODALA) ZAMIAST MAŁEGO NAPISU
                 document.getElementById('reg-success-modal').style.display = 'flex';
             } else {
                 msg.style.color = "var(--blood)";
@@ -999,7 +1001,9 @@
         let deckBId = null; 
         let isMixerPlaying = false;
         
-        function onYouTubeIframeAPIReady() { ytAPIReady = true; }
+        function onYouTubeIframeAPIReady() { 
+            ytAPIReady = true; 
+        }
         
         socket.on('searchResultsMixer', (d) => {
             const container = document.getElementById('res' + d.deck); 

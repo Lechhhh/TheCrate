@@ -25,9 +25,6 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// ==========================================
-// BEZPIECZNE FUNKCJE ODCZYTU (ELIMINUJĄ BŁĄD JSON!)
-// ==========================================
 function safeReadDB() {
     try {
         if (!fs.existsSync(dbPath)) return JSON.parse(JSON.stringify(defaultDB));
@@ -59,7 +56,7 @@ const defaultDB = {
   "art_03": { "category": "archive", "region": "US", "timestamp": 1688169600000, "title": "Travis Scott powraca z UTOPIĄ", "snippet": "Monumentalne dzieło zrzucające klątwę Astroworld.", "content": "<p>Po latach ciszy spowodowanej tragedią, Travis Scott powrócił z monumentalnym projektem 'Utopia'. Płyta ta to odważny krok w stronę awangardowego, brudnego brzmienia zdominowanego przez mroczne syntezatory i gęste bębny, silnie inspirowane epoką 'Yeezusa'. Album udowodnił, że Travis nie boi się ryzyka i potrafi wyznaczać nowe ścieżki w architekturze dźwięku.</p><p>Trasa koncertowa 'Circus Maximus' potwierdziła, że artysta nie ma sobie równych pod kątem wizualnym i scenicznym. Rzymskie Colosseum, gigantyczne głośniki i gościnne występy absolutnej topki potwierdziły jego status władcy rapgry.</p><br><p class='source-tag'>Źródło: Cactus Jack</p>", "searchTags": "travis scott utopia", "likes": 210, "dislikes": 5, "comments": [] },
   "art_04": { "category": "archive", "region": "PL", "timestamp": 1654041600000, "title": "White 2115 i rockstarowy sen", "snippet": "Jak Młody Łajcior połączył trap ze statusem gwiazdy rocka.", "content": "<p>White 2115 to fenomen, który udowodnił, że nie trzeba być klasycznym raperem, by zdominować listy przebojów w Polsce. Jego wokalne przeloty, mocno przesiąknięte melancholią, złamanym sercem i typowo wakacyjnym vibem, stały się oficjalną ścieżką dźwiękową polskiej młodzieży.</p><p>Jego projekty regularnie pokrywają się diamentem, udowadniając, że muzyka gitarowa w połączeniu z ciężkimi trapowymi bębnami to sprawdzony przepis na komercyjny triumf. Mimo krytyki ze strony purystów, White robi swoje i wypełnia największe festiwalowe hale w kraju po brzegi.</p><br><p class='source-tag'>Źródło: SBM Label / Popkiller</p>", "searchTags": "white 2115 sbm rockstar", "likes": 45, "dislikes": 12, "comments": [] },
   "art_05": { "category": "archive", "region": "PL", "timestamp": 1717200000000, "title": "Oki i fenomen Ery 47", "snippet": "Od podziemnych bitew po wyprzedane hale.", "content": "<p>Oki wdarł się na szczyt polskiej branży z bezkompromisowym projektem 'Era 47'. Jego hiperaktywne flow, charyzma i techniczna perfekcja sprawiły, że to wydawnictwo stało się czymś więcej niż tylko zbiorem piosenek - to pełnoprawny ruch kulturowy. Ubrania sygnowane jeżem i numerem 47 zalały polskie ulice.</p><p>Jego monumentalna trasa koncertowa udowodniła sceptykom, że hip-hop w Polsce ostatecznie przeniósł się z małych, ciasnych klubów na gigantyczne areny i stadiony. Jako showman, Oki aktualnie nie ma sobie równych na polskiej scenie live, łącząc energię moshpitu z precyzją sceniczną.</p><br><p class='source-tag'>Źródło: Opracowanie własne</p>", "searchTags": "oki era 47", "likes": 88, "dislikes": 3, "comments": [] },
-  "art_06": { "category": "archive", "region": "US", "timestamp": 1714521600000, "title": "Kendrick Lamar vs Drake: Upadek Imperium", "snippet": "Analiza największego beefu tej dekady.", "content": "<p>Wiosna 2024 roku zmieniła hip-hop na zawsze. Beef, który kiełkował od dekady, ostatecznie eksplodował z nuklearną siłą. Kendrick Lamar nie tylko wygrał starcie pod kątem lirycznym, ale przeprowadził metodyczną, publiczną egzekucję wizerunku Drake'a, punktując wszystkie jego słabości i mechanizmy działania wytwórni OVO.</p><p>Utwór 'Not Like Us' stał się absolutnym hymnem ulicznym w USA. Był grany w klubach, na meczach NBA i w samochodach, udowadniając, że klasyczny, oparty na wartościach hip-hop potrafi pobić pop-rap ich własną, najbardziej komercyjną bronią.</p><br><p class='source-tag'>Źródło: RapNews USA / Complex</p>", "searchTags": "kendrick drake beef", "likes": 305, "dislikes": 18, "comments": [] },
+  "art_06": { "category": "archive", "region": "US", "timestamp": 1714521600000, "title": "Kendrick Lamar vs Drake: Upadek Imperium", "snippet": "Analiza największego beefu tej dekady.", "content": "<p>Wiosna 2024 roku zmieniła hip-hop na zawsze. Beef, który kiełkował od dekady, ostatecznie eksplodował z nuklearną siłą. Kendrick Lamar nie tylko wygrał starcie pod kątem lirycznym, ale przeprowadził metodyczną, publiczną egzekucję wizerunku Drake'a, punktując wszystkie jego słabości i mechanizmy działania wytwórni OVO.</p><p>Utwór 'Not Like Us' stał się absolutnym hymnem ulicznym w USA. Był grany w klubach, na meczach NBA i w samochodach, udowadniając, że klasyczny, oparty na wartościach hip-hop potrafi pobić pop-rap ich własną, najbardziej komercyjną bronią. To była lekcja pokory dla całej branży rozrywkowej.</p><br><p class='source-tag'>Źródło: RapNews USA / Complex</p>", "searchTags": "kendrick drake beef", "likes": 305, "dislikes": 18, "comments": [] },
   "art_07": { "category": "archive", "region": "US", "timestamp": 1696118400000, "title": "Ken Carson - A Great Chaos", "snippet": "Płyta, która zdefiniowała brzmienie nowożytnego moshpitu.", "content": "<p>Ken Carson udowodnił albumem 'A Great Chaos', że nie jest tylko przystawką do Playboi Cartiego. AGC to potężna ściana dźwięku. Przesterowane, wgniatające w ziemię basy, krzykliwe wokale i tempo, które nie pozwala słuchaczowi złapać oddechu nawet na chwilę.</p><p>Koncerty z tą płytą to czyste, niebezpieczne szaleństwo. Ten album wyznaczył zupełnie nowe standardy ciężkości dla całego amerykańskiego podziemia, a producenci wspięli się tu na absolutne wyżyny swoich mrocznych możliwości.</p><br><p class='source-tag'>Źródło: Opium Label</p>", "searchTags": "ken carson agc", "likes": 120, "dislikes": 4, "comments": [] },
   "art_08": { "category": "archive", "region": "US", "timestamp": 1706745600000, "title": "Yeat wkracza w rok 2093", "snippet": "Koniec z dzwoneczkami. Raper ewoluuje w stronę mrocznego cyberpunku.", "content": "<p>Yeat całkowicie odciął się od swojego dawnego brzmienia z ery 'Up 2 Më'. Płyta '2093' to monumentalne, dystopijne przedsięwzięcie, pełne ciężkich, industrialnych syntezatorów, zniekształconych wokali i mrocznego klimatu rodem z filmów science-fiction.</p><p>Udowodnił tym samym, że nie jest tylko TikTokową ciekawostką, która zniknie po jednym sezonie, ale artystą z prawdziwą, wielką wizją, który potrafi ewoluować szybciej, niż branża jest w stanie to przetrawić.</p><br><p class='source-tag'>Źródło: Lyfestyle Corporation</p>", "searchTags": "yeat 2093", "likes": 110, "dislikes": 14, "comments": [] },
   "art_09": { "category": "archive", "region": "PL", "timestamp": 1585699200000, "title": "Quebonafide - Romantic Psycho", "snippet": "Największa mistyfikacja w historii polskiego rapu.", "content": "<p>Quebonafide zniknął z sieci, by powrócić w niebieskiej koszulce polo i z przyklejonymi tatuażami. Akcja promocyjna 'Romantic Psycho' to marketingowy majstersztyk, o którym uczy się na studiach. Kuba Grabowski zwiódł całą Polskę, po to, by na koniec zrzucić maskę i dostarczyć jedno z najważniejszych dzieł w polskiej muzyce.</p><p>Sama płyta to zbiór niesamowitych, emocjonalnych i bardzo osobistych utworów, które ukazały artystę z zupełnie innej, wrażliwej strony. To jeden z najważniejszych projektów dekady.</p><br><p class='source-tag'>Źródło: QueQuality</p>", "searchTags": "quebonafide romantic psycho", "likes": 145, "dislikes": 1, "comments": [] },
@@ -106,7 +103,6 @@ app.get('/api/articles', (req, res) => {
     res.json(dbData);
 });
 
-// ZARZĄDZANIE LAJKAMI I KOMENTARZAMI
 app.post('/api/article/:id/vote', (req, res) => {
     const { type } = req.body; 
     let db = safeReadDB();
@@ -139,24 +135,21 @@ app.post('/api/register', (req, res) => {
     if (users[username]) return res.json({ success: false, msg: "Ten Nick jest już zajęty!" });
     if (Object.values(users).some(u => u.email === email)) return res.json({ success: false, msg: "E-mail w użyciu!" });
 
-    // Tworzymy unikalny token do linku aktywacyjnego
     const verificationToken = crypto.randomBytes(20).toString('hex');
 
     users[username] = { 
         email, password, points: 0, avatar: "", bio: "", socials: { ig: "", sc: "", yt: "", sp: "" }, 
         isVerified: false, 
-        verificationToken: verificationToken // Zapisujemy token do bazy
+        verificationToken: verificationToken 
     };
     fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
 
-    // Dynamiczny adres strony
     const host = req.get('host');
     const protocol = req.protocol;
     const verifyLink = `${protocol}://${host}/api/verify-email?token=${verificationToken}&user=${username}`;
 
-    // Konstruowanie pierwszego maila (Aktywacja)
     const mailOptions = {
-        from: '"THE CRATE." <twoj.mail@gmail.com>', // <--- TUTAJ TEŻ WPISZ SWÓJ E-MAIL
+        from: '"THE CRATE." <twoj.mail@gmail.com>', 
         to: email,
         subject: 'Witaj w podziemiu! Aktywuj konto na THE CRATE.',
         html: `
@@ -170,25 +163,18 @@ app.post('/api/register', (req, res) => {
         `
     };
 
-    // Wysyłanie maila
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            console.log("Błąd wysyłki maila: ", error);
-            return res.json({ success: true, msg: "Konto utworzone, ale wystąpił błąd z wysyłką linku aktywacyjnego." });
-        }
-        res.json({ success: true, msg: "Zarejestrowano! Sprawdź swoją skrzynkę pocztową, aby aktywować konto." });
-    });
+    // WYSYŁKA W TLE - ZWROT DO KLIENTA NATYCHMIASTOWY
+    transporter.sendMail(mailOptions).catch(err => console.log("Błąd SMTP: ", err));
+
+    res.json({ success: true });
 });
 
-// ==========================================
 // ENDPOINT: ODBIERANIE KLIKNIĘCIA Z MAILA I WYSYŁKA POWITANIA
-// ==========================================
 app.get('/api/verify-email', (req, res) => {
     const { token, user } = req.query;
     let users = safeReadUsers();
 
     if (users[user] && users[user].verificationToken === token) {
-        // Aktywacja konta i czyszczenie tokenu
         users[user].isVerified = true;
         users[user].verificationToken = null; 
         fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
@@ -196,9 +182,8 @@ app.get('/api/verify-email', (req, res) => {
         const host = req.get('host');
         const protocol = req.protocol;
         
-        // NOWOŚĆ: Automatyczna wysyłka drugiego maila (Potwierdzenie Aktywacji)
         const welcomeMailOptions = {
-            from: '"THE CRATE." <twoj.mail@gmail.com>', // <--- TUTAJ TEŻ WPISZ SWÓJ E-MAIL
+            from: '"THE CRATE." <twoj.mail@gmail.com>', 
             to: users[user].email,
             subject: 'Konto aktywowane! Witamy w THE CRATE.',
             html: `
@@ -211,10 +196,8 @@ app.get('/api/verify-email', (req, res) => {
             `
         };
 
-        // Wysyłamy w tle, bez blokowania strony dla użytkownika
         transporter.sendMail(welcomeMailOptions).catch(err => console.log("Błąd wysyłki maila powitalnego: ", err));
         
-        // Wyświetlenie komunikatu w przeglądarce i przekierowanie na stronę
         res.send(`
             <body style="background:#0f0e0d; color:#dbff00; font-family:sans-serif; text-align:center; padding-top:100px;">
                 <h1 style="font-size:40px;">KONTO ZWERYFIKOWANE!</h1>
@@ -270,7 +253,7 @@ app.get('/api/leaderboard', (req, res) => {
 });
 
 // ==========================================
-// CHATBOT AI - IDEALNY ZŁOTY ŚRODEK, ZAKAZ ZMYŚLANIA FAKTÓW
+// CHATBOT AI 
 // ==========================================
 async function callSmartAI(systemMsg, userMsg) {
     try {
@@ -281,9 +264,13 @@ async function callSmartAI(systemMsg, userMsg) {
 }
 
 app.post('/api/chat', async (req, res) => {
-    const sysPrompt = `Jesteś Digger_AI, wirtualnym redaktorem i ekspertem portalu rapowego THE CRATE. 
-    Twój styl to złoty środek: pisz naturalnie, przyjaźnie i z pasją do hip-hopu, ale nie bądź sztywnym robotem (nie używaj słów typu "struktury elektroniczne" czy "jazz") i MASZ ZAKAZ używania wymuszonego, boomerskiego slangu (żadnego "drip", "swag", "sazkiem", "tissue" na siłę). Używaj zwykłego polskiego języka z naturalnymi określeniami (np. beat, underground, flow, produkcja). Bądź konkretny (max 2-3 zdania). 
-    BARDZO WAŻNE: Nie zmyślaj faktów. Jeśli nie znasz dokładnego utworu artysty z polskiego podziemia (np. Wane), przyznaj, że ciężko wskazać jeden główny numer, bo wszystko lata na Soundcloudzie. MASZ ABSOLUTNY ZAKAZ wymyślania tytułów piosenek!`;
+    const sysPrompt = `Jesteś Digger_AI, wirtualnym redaktorem portalu rapowego THE CRATE. Bądź naturalnym, wyluzowanym ziomkiem, który po prostu dobrze zna się na muzyce rap/trap.
+    ZASADY, KTÓRYCH MUSISZ PRZESTRZEGAĆ:
+    1. Pisz w 100% poprawnym językiem polskim.
+    2. MASZ ABSOLUTNY ZAKAZ zmyślania faktów i wymyślania tytułów piosenek! Jeśli nie znasz konkretnego utworu z podziemia (np. rapera Wane, Aleshen), napisz po prostu: "Ciężko wybrać jeden numer, chłopak wrzuca sporo luźnych tracków na Soundcloudzie, trzeba to śledzić na bieżąco".
+    3. Używaj tylko naturalnych, powszechnie akceptowanych w rapie zwrotów (np. beat, podziemie, flow, track, underground).
+    4. CAŁKOWITY ZAKAZ boomerskiego slangu (zero słów typu: drip, swag, mordo, tissue, smack, sazek).
+    5. Żadnego sztywnego, naukowego języka (zero "eksplorowania struktur" czy analiz). Odpowiadaj krótko (max 3 zdania).`;
     
     const reply = await callSmartAI(sysPrompt, req.body.message) || "Sorki, wystąpił błąd serwera. Spróbuj jeszcze raz.";
     res.json({ reply: reply.replace(/\n/g, '<br>') });
@@ -316,14 +303,13 @@ io.on('connection', (socket) => {
 });
 
 // ==========================================
-// AUTODIGGER AI - BEZPIECZNE GENEROWANIE NEWSÓW W TLE
+// AUTODIGGER AI - BEZPIECZNE GENEROWANIE NEWSÓW
 // ==========================================
 const fallbackBank = [
     { title: "Future & Metro Boomin - Złota Era Trapu", snippet: "Duet, który nie potrafi nagrać słabego utworu.", content: "<p>Kiedy Metro Boomin robi bity, a Future wchodzi do kabiny, dzieje się magia. Ich projekty to absolutna esencja atlantskiego trapu, od mrocznych syntezatorów po lodowate flow Plutona.</p><p>Każdy wyciek z ich sesji nagraniowych to natychmiastowy hit w podziemiu. Future udowadnia, że wciąż potrafi wyznaczać nowe standardy toksycznego brzmienia R&B.</p><p>To niesamowite, jak ich chemia ewoluowała od czasów 'Monster'. Żaden inny duet w rapie nie ma takiej powtarzalności w dostarczaniu hitów.</p><br><p class='source-tag'>Źródło: The Crate</p>", searchQuery: "Future official music video", isLeak: false, artist: "Future" }
 ];
 
 async function runAutoDigger() {
-    console.log('[AUTODIGGER] Szukam nowych tematów...');
     let currentDB = safeReadDB();
     let articleData = null;
 
@@ -341,7 +327,6 @@ async function runAutoDigger() {
                     articleData = parsed;
                 }
             } catch(parseErr) {
-                console.log("[AUTODIGGER] AI wygenerowało uszkodzony JSON, przerywam...");
             }
         }
     } catch(e) {}
