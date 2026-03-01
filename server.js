@@ -17,14 +17,16 @@ const usersPath = path.join(__dirname, 'users.json');
 // ==========================================
 // KONFIGURACJA WYSYŁKI E-MAIL (WPISZ SWOJE DANE!)
 // ==========================================
+
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // Wymusza szyfrowanie (ważne dla serwerów w chmurze)
     auth: {
-        user: 'thecrate.kontakt@gmail.com', // <--- TUTAJ WPISZ SWÓJ E-MAIL GMAIL
-        pass: 'ybzkosxsqtulgowb' // <--- TUTAJ WKLEJ HASŁO APLIKACJI Z GOOGLE (bez spacji)
+        user: 'thecrate.kontakt@gmail.com', // Twój email
+        pass: 'ybzkosxsqtulgowb' // Hasło aplikacji z Google
     }
 });
-
 function safeReadDB() {
     try {
         if (!fs.existsSync(dbPath)) return JSON.parse(JSON.stringify(defaultDB));
