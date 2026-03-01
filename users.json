@@ -1,0 +1,17 @@
+{
+  "Rico": {
+    "email": "ricoshit6@gmail.com",
+    "password": "Guwno1234!",
+    "points": 0,
+    "avatar": "",
+    "bio": "",
+    "socials": {
+      "ig": "",
+      "sc": "",
+      "yt": "",
+      "sp": ""
+    },
+    "isVerified": false,
+    "verificationToken": "158b1406fa5d8ae9a0fcbd090769275f9dce6f91"
+  }
+}
