@@ -20,15 +20,16 @@
             --purple: #7b2cbf; 
         }
 
-        /* * MAGIA SKALOWANIA 
-         * Wymuszamy 80% rozmiaru na komputerach, co idealnie symuluje oddalenie w przeglądarce (Zoom 80%), 
-         * wysmuklając cały interfejs i menu.
-         */
+        /* ========================================================= */
+        /* SKALOWANIE DLA PC (Idealne oddalenie 90%) */
+        /* ========================================================= */
         @media (min-width: 1000px) {
             html { font-size: 85%; }
         }
         
-        * { box-sizing: border-box; cursor: none; }
+        * { 
+            box-sizing: border-box; 
+        }
         
         body { 
             background: var(--bg); 
@@ -44,7 +45,19 @@
             text-transform: uppercase; 
         }
         
-        /* KURSOR */
+        /* ========================================================= */
+        /* INTELIGENTNY KURSOR (DZIAŁA TYLKO NA URZĄDZENIACH Z MYSZKĄ) */
+        /* ========================================================= */
+        @media (hover: hover) and (pointer: fine) {
+            body, a, button, h1, h2, h3, p, div, span { cursor: none !important; }
+            input, textarea { cursor: text !important; }
+        }
+        
+        @media (hover: none), (pointer: coarse) {
+            .custom-cursor { display: none !important; }
+            * { cursor: auto !important; }
+        }
+
         .custom-cursor { 
             width: 14px; 
             height: 14px; 
@@ -76,6 +89,7 @@
             mix-blend-mode: overlay; 
         }
 
+        /* NAWIGACJA */
         .nav-header { 
             position: fixed; 
             top: 0; 
@@ -95,6 +109,15 @@
         .nav-links a { color: #fff; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: 0.3s;}
         .nav-links a:hover { color: var(--acid); }
         
+        /* PRZYCISK HAMBURGERA DLA TELEFONÓW */
+        .menu-toggle {
+            display: none;
+            font-size: 2.2rem;
+            color: var(--acid);
+            cursor: pointer;
+            z-index: 10006;
+        }
+
         .auth-status { 
             display: flex; 
             align-items: center; 
@@ -119,7 +142,7 @@
         .view-section.active { display: block; }
         @keyframes fadeIn { from {opacity: 0; transform: translateY(10px);} to {opacity: 1; transform: translateY(0);} }
 
-        /* KAFELKI Z DATAMI */
+        /* KAFELKI */
         .bento-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2rem; }
         .card { 
             background: var(--paper); 
@@ -144,13 +167,24 @@
         .tag { font-family: 'Syne'; font-size: 0.75rem; font-weight: 800; background: var(--bg); color: var(--paper); padding: 0.3rem 0.6rem; display: inline-block; margin-bottom: 10px;}
         .card-hottest .tag { background: var(--bg); color: var(--acid); }
         
+        /* ========================================================= */
         /* DATA NA KAFELKU - W PEŁNI WIDOCZNA! */
-        .date-tag { font-family: 'Syne'; font-size: 0.75rem; font-weight: 800; background: transparent; border: 2px solid #000; color: #000; padding: 0.25rem 0.5rem; display: inline-block; margin-bottom: 10px; text-transform: uppercase;}
+        /* ========================================================= */
+        .date-tag { 
+            font-family: 'Syne'; 
+            font-size: 0.75rem; 
+            font-weight: 800; 
+            background: transparent; 
+            border: 2px solid #000; 
+            color: #000; 
+            padding: 0.25rem 0.5rem; 
+            display: inline-block; 
+            margin-bottom: 10px; 
+            text-transform: uppercase;
+        }
         .card-hottest .date-tag { border-color: #fff; color: #fff; border-width: 1px;}
 
-        /* ========================================================= */
-        /* NOWOCZESNY SLIDER ARCHIWUM */
-        /* ========================================================= */
+        /* SLIDER ARCHIWUM */
         .carousel-viewport { 
             overflow: hidden; 
             width: 100%; 
@@ -172,14 +206,10 @@
         
         .carousel-controls-top { display: flex; gap: 15px; margin-bottom: 2rem; }
 
-        /* ========================================================= */
         /* IDEALNIE CZYTELNY ARTYKUŁ (Duża czcionka Zilla) */
-        /* ========================================================= */
         #article-content { max-width: 900px; margin: 0 auto; padding-bottom: 5vh;}
         #article-content h1 { font-family: 'Syne', sans-serif; font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 0.9; margin-bottom: 2rem; word-break: break-word; color: var(--paper);}
-        
         #article-content p { font-family: 'Zilla Slab', serif; font-weight: 400; font-size: 1.5rem; line-height: 1.8; margin-bottom: 2rem; text-align: left; color: #e2dcd0;}
-        
         .source-tag { font-family: 'Syne', sans-serif !important; font-size: 1rem !important; color: var(--blood) !important; border-top: 2px dashed var(--blood); padding-top: 15px; display: inline-block; margin-top: 2rem; font-weight: 800 !important;}
         .media-embed { width: 100%; aspect-ratio: 16/9; margin-top: 2rem; border: 4px solid var(--acid); box-shadow: 8px 8px 0 rgba(219, 255, 0, 0.2);}
 
@@ -234,14 +264,38 @@
         .ai-typing-blink { animation: blinker 1s linear infinite; }
         @keyframes blinker { 50% { opacity: 0.3; } }
 
+        /* ========================================================= */
+        /* RESPONSYWNOŚĆ (TELEFONY I TABLETY) */
+        /* ========================================================= */
         @media (max-width: 1000px) { 
             .grid-2 { grid-template-columns: 1fr; } 
-            .nav-links { display: none;} 
             .card { grid-column: span 12; } 
-            .mixer-controls{grid-column: span 1;} 
+            .mixer-controls { grid-column: span 1; } 
             #digger-ai { width: 100vw; } 
+            
+            /* Pokazujemy ikonę menu na telefonach */
+            .menu-toggle { display: block; }
+            
+            /* Pasek z linkami staje się wysuwanym panelem bocznym */
+            .nav-links { 
+                position: fixed; 
+                top: 0; 
+                right: -100%; 
+                width: 280px; 
+                height: 100vh; 
+                background: rgba(15,14,13,0.98); 
+                flex-direction: column; 
+                justify-content: center; 
+                align-items: center;
+                border-left: 2px solid var(--acid); 
+                transition: right 0.3s ease-in-out; 
+                z-index: 10005;
+                box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+            }
+            .nav-links.open { right: 0; }
+            .nav-links a { font-size: 1.5rem; margin: 15px 0; }
+            .auth-status { margin-top: 20px; font-size: 1.2rem; }
         }
-        .hover-target { cursor: none !important; }
     </style>
 </head>
 <body>
@@ -267,7 +321,10 @@
 
     <nav class="nav-header">
         <div class="logo hover-target" onclick="navigate('latest')">THE CRATE.</div>
-        <div class="nav-links">
+        
+        <div class="menu-toggle hover-target" onclick="toggleMenu()">☰</div>
+        
+        <div class="nav-links" id="nav-links">
             <a href="#" class="hover-target" onclick="navigate('latest')">LATEST</a>
             <a href="#" class="hover-target" onclick="navigate('archive')">ARCHIVE ↳</a>
             <a href="#" class="hover-target" onclick="navigate('leaks')" style="color: var(--blood);">LEAKS & SNIPPETS</a>
@@ -462,7 +519,13 @@
     </div>
 
     <script>
-        // JS DLA KURSORA
+        // ================= FUNKCJA MENU NA TELEFON =================
+        function toggleMenu() {
+            const nav = document.getElementById('nav-links');
+            nav.classList.toggle('open');
+        }
+
+        // ================= KURSOR =================
         const cursor = document.getElementById('cursor'); 
         let mX = 0, mY = 0, cX = 0, cY = 0;
         
@@ -478,6 +541,7 @@
             cursor.style.top = cY + 'px'; 
             requestAnimationFrame(loop); 
         } 
+        
         loop();
         
         document.body.addEventListener('mouseover', e => { 
@@ -492,6 +556,7 @@
             }
         });
 
+        // ================= INICJALIZACJA =================
         const socket = io();
         let database = {};
         let currentUser = localStorage.getItem('crate_user');
@@ -509,19 +574,34 @@
 
         // ================= NAWIGACJA Z PAMIĘCIĄ =================
         function navigate(id) {
+            // Zamykamy menu po kliknięciu linku na telefonie
+            const nav = document.getElementById('nav-links');
+            if (nav && nav.classList.contains('open')) {
+                nav.classList.remove('open');
+            }
+
             if (currentView !== 'article' && id === 'article') {
                 previousView = currentView;
             } else if (id !== 'article') {
                 currentView = id; 
             }
 
-            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.view-section').forEach(v => {
+                v.classList.remove('active');
+            });
+            
             document.getElementById('view-' + id).classList.add('active');
             window.scrollTo(0,0);
             
-            if(id === 'battle') fetchLeaderboard();
-            if(id === 'archive') renderArchive();
-            if(id !== 'article') currentArticleId = null;
+            if(id === 'battle') {
+                fetchLeaderboard();
+            }
+            if(id === 'archive') {
+                renderArchive();
+            }
+            if(id !== 'article') {
+                currentArticleId = null;
+            }
         }
 
         function goBack() {
@@ -531,14 +611,19 @@
         // ================= AUTH LOGIC =================
         function updateNavAuth() {
             const btn = document.getElementById('auth-display');
+            
             if(currentUser) {
                 const av = localStorage.getItem('crate_avatar') || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23dbff00%22/></svg>';
                 btn.innerHTML = `<img src="${av}" class="nav-avatar"> <span>${currentUser}</span>`;
-                btn.style.background = 'transparent'; btn.style.border = 'none'; btn.style.color = 'var(--paper)';
+                btn.style.background = 'transparent'; 
+                btn.style.border = 'none'; 
+                btn.style.color = 'var(--paper)';
                 document.getElementById('comment-auth-gate').style.display = 'block';
                 document.getElementById('comment-login-gate').style.display = 'none';
             } else {
-                btn.innerHTML = 'ZALOGUJ'; btn.style.background = 'var(--acid)'; btn.style.color = '#000';
+                btn.innerHTML = 'ZALOGUJ'; 
+                btn.style.background = 'var(--acid)'; 
+                btn.style.color = '#000';
                 document.getElementById('comment-auth-gate').style.display = 'none';
                 document.getElementById('comment-login-gate').style.display = 'block';
             }
@@ -560,10 +645,17 @@
             const p2 = document.getElementById('reg-pass2').value;
             const msg = document.getElementById('reg-msg');
             
-            if(!email || !nick || !p1 || !p2) return msg.innerText = "Wypełnij wszystkie pola!";
-            if(p1 !== p2) { msg.style.color = "var(--blood)"; return msg.innerText = "Błąd: Hasła nie są identyczne!"; }
+            if(!email || !nick || !p1 || !p2) {
+                return msg.innerText = "Wypełnij wszystkie pola!";
+            }
+            
+            if(p1 !== p2) { 
+                msg.style.color = "var(--blood)"; 
+                return msg.innerText = "Błąd: Hasła nie są identyczne!"; 
+            }
             
             const specialCharPattern = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+            
             if(p1.length < 7 || !specialCharPattern.test(p1)) {
                 msg.style.color = "var(--blood)";
                 return msg.innerText = "Błąd: Hasło musi mieć min. 7 znaków i 1 znak specjalny!";
@@ -607,6 +699,7 @@
                     password: document.getElementById('login-pass').value
                 }) 
             });
+            
             const d = await r.json();
             document.getElementById('login-msg').innerText = d.msg;
             
@@ -633,7 +726,9 @@
             if(d.success) {
                 document.getElementById('prof-username').innerText = d.user.username;
                 document.getElementById('prof-points').innerText = d.user.points + " PKT";
-                if(d.user.avatar) document.getElementById('prof-avatar-img').src = d.user.avatar;
+                if(d.user.avatar) {
+                    document.getElementById('prof-avatar-img').src = d.user.avatar;
+                }
             }
         }
 
@@ -654,7 +749,10 @@
             renderLatest('grid-latest', 'news'); 
             renderLatest('grid-leaks', 'leak');
             renderArchive(); 
-            if(currentArticleId) refreshArticleComments(currentArticleId);
+            
+            if(currentArticleId) {
+                refreshArticleComments(currentArticleId);
+            }
         }
 
         function renderLatest(id, cat) {
@@ -671,15 +769,15 @@
 
             sortedArticles.forEach(([k, v]) => {
                 let show = false;
-                if(cat === 'news' && (v.category === 'news' || v.category === 'leak')) show = true;
-                else if (v.category === cat) show = true;
+                if(cat === 'news' && (v.category === 'news' || v.category === 'leak')) {
+                    show = true;
+                } else if (v.category === cat) {
+                    show = true;
+                }
 
                 if(show) {
                     const dt = v.timestamp ? formatCardDate(v.timestamp) : (v.date || '');
-                    
-                    // WŁAŚCIWA, WIDOCZNA DATA NA KAFELKU
                     const dateTagHTML = dt ? `<span class="date-tag">${dt}</span>` : '';
-                    
                     const tag = `<span class="tag">${v.region} SCENA</span>`;
                     const cl = (cat === 'news' && isFirst) ? 'card card-hottest' : 'card';
                     isFirst = false;
@@ -705,7 +803,9 @@
             const track = document.getElementById('archive-track');
             track.innerHTML = '';
             
-            let sortedArticles = Object.entries(database).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
+            let sortedArticles = Object.entries(database).sort((a, b) => {
+                return (b[1].timestamp || 0) - (a[1].timestamp || 0);
+            });
             
             let filtered = sortedArticles.filter(([k, v]) => {
                 return (v.title.toLowerCase().includes(query) || (v.searchTags && v.searchTags.toLowerCase().includes(query)));
@@ -721,7 +821,6 @@
 
             for (let i = 0; i < filtered.length; i += chunkSize) {
                 const chunk = filtered.slice(i, i + chunkSize);
-                
                 let slideHtml = `<div class="carousel-slide"><div class="bento-grid">`;
                 
                 chunk.forEach(([k, v]) => {
@@ -768,8 +867,6 @@
             const d = database[id];
             
             const dt = d.timestamp ? formatCardDate(d.timestamp) : (d.date || '');
-            
-            // ZIELONA DATA (KWASOWA) WEWNĄTRZ ARTYKUŁU
             const dateTag = dt ? `<span class="date-tag" style="color:var(--acid); border-color:var(--acid); margin-left:10px;">${dt}</span>` : '';
             
             document.getElementById('art-content').innerHTML = `
@@ -913,7 +1010,9 @@
         let deckBId = null; 
         let isMixerPlaying = false;
         
-        function onYouTubeIframeAPIReady() { ytAPIReady = true; }
+        function onYouTubeIframeAPIReady() { 
+            ytAPIReady = true; 
+        }
         
         socket.on('searchResultsMixer', (d) => {
             const container = document.getElementById('res' + d.deck); 
@@ -1015,7 +1114,9 @@
             list.innerHTML = ''; 
             const rooms = Object.values(roomsObj); 
             
-            if(rooms.length===0) return list.innerHTML = '<p style="opacity:0.5;">Brak otwartych sesji.</p>';
+            if(rooms.length===0) {
+                return list.innerHTML = '<p style="opacity:0.5;">Brak otwartych sesji.</p>';
+            }
             
             rooms.forEach(r => { 
                 list.innerHTML += `
@@ -1097,6 +1198,7 @@
             ytPlayerBattle.pauseVideo(); 
             document.getElementById('btn-stop-audio').style.display='none'; 
             document.getElementById('guess-form').style.display='block'; 
+            
             guessInterval=setInterval(()=>{
                 guessTime--;
                 document.getElementById('countdown-val').innerText=guessTime;
