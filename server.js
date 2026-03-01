@@ -149,7 +149,7 @@ app.post('/api/register', (req, res) => {
     const verifyLink = `${protocol}://${host}/api/verify-email?token=${verificationToken}&user=${username}`;
 
     const mailOptions = {
-        from: '"THE CRATE." <twoj.mail@gmail.com>', 
+        from: '"THE CRATE." <thecrate.kontakt@gmail.com>', 
         to: email,
         subject: 'Witaj w podziemiu! Aktywuj konto na THE CRATE.',
         html: `
