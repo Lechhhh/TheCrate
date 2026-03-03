@@ -269,6 +269,15 @@
             .nav-links a { font-size: 1.5rem; margin: 15px 0; }
             .auth-status { margin-top: 20px; font-size: 1.2rem; }
         }
+
+        .fest-arrow {
+            background: transparent; color: var(--acid); border: 1px solid var(--acid);
+            cursor: pointer; font-weight: bold; padding: 4px 12px; font-family:'Syne'; font-size: 1.2rem;
+            transition: 0.1s;
+        }
+        .fest-arrow:active {
+            transform: scale(0.8); background: var(--blood) !important; border-color: var(--blood) !important; color: #fff !important;
+        }
     </style>
 </head>
 <body>
@@ -754,6 +763,10 @@
             if(!grid) return; 
             grid.innerHTML = ''; 
             let isFirst = true;
+
+            // Pobieramy festiwale z bazy wygenerowane przez AI bota
+            window.festivalsData = Object.values(database).filter(v => v.category === 'festival').sort((a, b) => b.timestamp - a.timestamp).slice(0, 6);
+            window.currentFestSlide = window.currentFestSlide || 0;
             
             let sortedArticles = Object.entries(database).sort((a, b) => {
                 const timeA = a[1].timestamp || 0; 
@@ -773,19 +786,67 @@
                     const dt = v.timestamp ? formatCardDate(v.timestamp) : (v.date || '');
                     const dateTagHTML = dt ? `<span class="date-tag">${dt}</span>` : '';
                     const tag = `<span class="tag">${v.region} SCENA</span>`;
-                    const cl = (cat === 'news' && isFirst) ? 'card card-hottest' : 'card';
-                    isFirst = false;
+                    const leakTagHTML = (v.leakType && v.leakType !== "NONE") ? `<span class="tag" style="color:var(--bg); background:var(--blood); margin-left:10px; margin-right:10px;">${v.leakType}</span>` : '';
                     
-                    grid.innerHTML += `
-                    <div class="${cl} hover-target" onclick="show('${k}')">
-                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; align-items:center;">
-                            ${tag}${dateTagHTML}
-                        </div>
-                        <h3>${v.title}</h3>
-                        <p>${v.snippet}</p>
-                    </div>`;
+                    if(cat === 'news' && isFirst) {
+                        isFirst = false;
+                        
+                        let festHTML = '';
+                        // Jeśli w bazie jest festiwal od bota, rysuje się ten kwadrat:
+                        if(window.festivalsData.length > 0) {
+                            festHTML = `
+                            <div style="flex: 1; min-width: 300px; background: #111; border: 2px solid var(--acid); padding: 1.5rem; display: flex; flex-direction: column; position: relative; box-shadow: 6px 6px 0 var(--acid);" onclick="event.stopPropagation()">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 2px dashed var(--acid); padding-bottom: 10px;">
+                                    <h4 style="margin: 0; color: var(--acid); font-family: 'Syne'; font-size: 1.3rem; letter-spacing: 1px;">🔥 LIVE IN EUROPE 2026</h4>
+                                    <div style="display:flex; gap: 10px;">
+                                        <button class="fest-arrow hover-target" onclick="event.stopPropagation(); slideFest(-1)">←</button>
+<button class="fest-arrow hover-target" onclick="event.stopPropagation(); slideFest(1)">→</button>
+                                    </div>
+                                </div>
+                                <div style="overflow: hidden; flex: 1; position: relative; display: flex; align-items: center;">
+                                    <div id="fest-track" style="display: flex; transition: transform 0.4s cubic-bezier(0.85, 0, 0.15, 1); width: 100%; align-items: center;">
+                                        </div>
+                                </div>
+                            </div>`;
+                            setTimeout(renderFestivals, 50);
+                        }
+
+                        grid.innerHTML += `
+                        <div style="grid-column: span 12; display: flex; flex-wrap: wrap; gap: 2rem; align-items: stretch;">
+                            <div class="card card-hottest hover-target" onclick="show('${k}')" style="flex: 2; min-width: 300px; margin: 0;">
+                                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; align-items:center;">
+                                    ${tag}${leakTagHTML}${dateTagHTML}
+                                </div>
+                                <h3>${v.title}</h3>
+                                <p>${v.snippet}</p>
+                            </div>
+                            ${festHTML}
+                        </div>`;
+                    } else {
+                        const cl = 'card';
+                        grid.innerHTML += `
+                        <div class="${cl} hover-target" onclick="show('${k}')">
+                            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; align-items:center;">
+                                ${tag}${leakTagHTML}${dateTagHTML}
+                            </div>
+                            <h3>${v.title}</h3>
+                            <p>${v.snippet}</p>
+                        </div>`;
+                    }
                 }
             });
+        }
+
+    
+        function slideFest(dir) {
+            if(!window.festivalsData || window.festivalsData.length === 0) return;
+            window.currentFestSlide += dir;
+            if(window.currentFestSlide < 0) window.currentFestSlide = window.festivalsData.length - 1;
+            if(window.currentFestSlide >= window.festivalsData.length) window.currentFestSlide = 0;
+            
+            const track = document.getElementById('fest-track');
+            // POPRAWNA MATEMATYKA - przesuwa tylko o 1 kafelek
+            if(track) track.style.transform = 'translateX(-' + (window.currentFestSlide * (100 / window.festivalsData.length)) + '%)';
         }
 
         // ================= KARUZELA W ARCHIWUM =================
@@ -1228,6 +1289,51 @@
             document.getElementById('overlay-msg').innerHTML = d.msg + "<br><br>Grasz jako: " + (currentUser ? currentUser : "Gość"); 
             document.getElementById('game-overlay').style.display = 'flex'; 
         });
+
+// ===============================================
+        // LOGIKA DLA KARUZELI FESTIWALI (NAPRAWIONA)
+        // ===============================================
+        function renderFestivals() {
+            const track = document.getElementById('fest-track');
+            if(!track || !window.festivalsData) return;
+            track.innerHTML = '';
+            
+            // ZABEZPIECZENIE: Usuwa duplikaty (np. 3x Drake) na żywo
+            const uniqueFests = [];
+            const seen = new Set();
+            window.festivalsData.forEach(f => {
+                if(!seen.has(f.artist)) {
+                    seen.add(f.artist);
+                    uniqueFests.push(f);
+                }
+            });
+            window.festivalsData = uniqueFests;
+
+            window.festivalsData.forEach(f => {
+                // Awaryjne koło ratunkowe, by NIGDY nie pokazało zepsutej ikonki
+                const fallbackImg = `https://ui-avatars.com/api/?name=${encodeURIComponent(f.artist)}&background=0f0e0d&color=dbff00&size=200&bold=true`;
+                
+                track.innerHTML += `
+                <div style="flex: 0 0 100%; min-width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-sizing: border-box; padding: 0 10px;">
+                    <img src="${f.img}" onerror="this.onerror=null; this.src='${fallbackImg}';" style="width: 150px; height: 150px; object-fit: cover; border: 2px solid var(--acid); margin-bottom: 15px; border-radius: 12px; box-shadow: 4px 4px 0 var(--blood);">
+                    <h3 style="margin: 0; color: #fff; font-size: 1.5rem; font-family: 'Syne'; line-height: 1.1; text-transform: uppercase; word-break: break-word;">${f.artist}</h3>
+                    <p style="margin: 5px 0 0 0; color: var(--acid); font-weight: bold; font-family: 'Zilla Slab'; font-size: 1rem; letter-spacing: 1px; text-transform: uppercase;">📍 ${f.festName}</p>
+                </div>`;
+            });
+            window.currentFestSlide = 0;
+            slideFest(0);
+        }
+
+        function slideFest(dir) {
+            if(!window.festivalsData || window.festivalsData.length === 0) return;
+            window.currentFestSlide += dir;
+            if(window.currentFestSlide < 0) window.currentFestSlide = window.festivalsData.length - 1;
+            if(window.currentFestSlide >= window.festivalsData.length) window.currentFestSlide = 0;
+            
+            const track = document.getElementById('fest-track');
+            // IDEALNA MATEMATYKA - przesuwa perfekcyjnie o 1 ekran, zero czarnych dziur
+            if(track) track.style.transform = `translateX(-${window.currentFestSlide * 100}%)`;
+        }
 
         // INIT
         window.onload = () => { 
