@@ -420,15 +420,35 @@
 
     <main id="view-mixer" class="view-section">
         <h1 style="font-size: clamp(3rem, 6vw, 5rem); color: var(--acid); margin-bottom: 2rem;">AI MASHUP MIXER.</h1>
+        
+        <div style="border: 2px dashed var(--acid); padding: 20px; background: rgba(219, 255, 0, 0.05); border-radius: 10px; margin-bottom: 30px; box-shadow: 4px 4px 0 var(--acid);">
+            <h3 style="color: var(--acid); font-family: 'Syne'; margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 1.3rem;">
+                <span style="font-size: 1.8rem;">🎛️</span> JAK DZIAŁA THE CRATE MIXER?
+            </h3>
+            <p style="color: #e2dcd0; font-size: 1rem; line-height: 1.6; margin-bottom: 15px; font-family: 'Zilla Slab';">
+                To narzędzie symuluje prawdziwą, klubową konsolę DJ-ską. W przeciwieństwie do płatnych serwerów w chmurze, nasz skrypt synchronizuje ścieżki <strong style="color: #fff;">na żywo</strong>, bez sztucznego zniekształcania głosów raperów.
+            </p>
+            <div style="background: #0f0e0d; border-left: 4px solid var(--blood); padding: 15px;">
+                <p style="color: #fff; font-size: 1rem; line-height: 1.6; font-family: 'Syne'; font-weight: bold; margin-top: 0; margin-bottom: 10px;">
+                    🔥 PRO TIP DLA NAJLEPSZEGO MASHUPU:
+                </p>
+                <p style="color: #aaa; margin: 0; font-family: 'Zilla Slab';">
+                    Aby piosenki nie "rozjeżdżały się" w trakcie słuchania, musisz wpisać w wyszukiwarkę utwory o zbliżonym tempie muzycznym (BPM)!<br><br>
+                    👉 <span style="color: var(--acid);">Deck A (Bit):</span> Wpisz np. <b>"Travis Scott instrumental 130 bpm"</b><br>
+                    👉 <span style="color: var(--acid);">Deck B (Wokal):</span> Wpisz np. <b>"Playboi Carti acapella 130 bpm"</b>
+                </p>
+            </div>
+        </div>
+
         <div class="grid-2">
             <div id="mixer-yt-a" style="position:absolute; opacity:0; pointer-events:none;"></div>
             <div id="mixer-yt-b" style="position:absolute; opacity:0; pointer-events:none;"></div>
-            <div class="panel" style="border-color: var(--acid);">
+            <div class="panel deck-box" style="border-color: var(--acid);">
                 <h3 style="color:var(--acid);">DECK A (BIT)</h3>
                 <input type="text" class="input-text hover-target" placeholder="Szukaj instrumentalu..." onchange="socket.emit('searchTrackMixer', {query: this.value, deck: 'A'})">
                 <div id="resA"></div>
             </div>
-            <div class="panel" style="border-color: var(--purple);">
+            <div class="panel deck-box" style="border-color: var(--purple);">
                 <h3 style="color:var(--purple);">DECK B (WOKAL)</h3>
                 <input type="text" class="input-text hover-target" placeholder="Szukaj acapelli..." onchange="socket.emit('searchTrackMixer', {query: this.value, deck: 'B'})">
                 <div id="resB"></div>
@@ -437,7 +457,7 @@
                 <h2 style="margin: 0; color: var(--blood);" id="mixer-status">WYBIERZ UTWORY DO ZMIXOWANIA</h2>
                 <button class="mixer-play-btn hover-target" id="mixer-play-btn" onclick="generateMashup()" disabled>GENERUJ MASHUP</button>
                 <div class="progress-container" id="mix-progress-container"><div class="progress-bar" id="mix-progress"></div></div>
-                <button class="btn hover-target" id="mixer-pause-btn" style="display:none; width:100%; font-size: 1.5rem; background: var(--blood); color:#fff;" onclick="toggleMixerPlay()">PAUSE AUDIO</button>
+                <button class="btn hover-target" id="mixer-pause-btn" style="display:none; width:100%; font-size: 1.5rem; background: var(--acid); color:#000;" onclick="toggleMixerPlay()">PAUSE AUDIO</button>
             </div>
         </div>
     </main>
@@ -561,7 +581,7 @@
         }
 
         // ================= NAWIGACJA Z PAMIĘCIĄ =================
-function navigate(id) {
+        function navigate(id) {
             const nav = document.getElementById('nav-links');
             if (nav && nav.classList.contains('open')) {
                 nav.classList.remove('open');
@@ -647,7 +667,6 @@ function navigate(id) {
                 return msg.innerText = "Błąd: Hasło musi mieć min. 7 znaków i 1 znak specjalny!";
             }
 
-            // WYCZYSZCZENIE MAŁEGO NAPISU I ZMIANA PRZYCISKU NA ŁADOWANIE
             msg.innerText = "";
             const originalBtnText = btn.innerText;
             btn.innerText = "ŁADOWANIE...";
@@ -660,34 +679,19 @@ function navigate(id) {
             });
             const d = await r.json(); 
             
-            // PRZYWRÓCENIE PRZYCISKU
             btn.innerText = originalBtnText;
             btn.style.opacity = "1";
             
             if(d.success) {
-                // CZYSZCZENIE PÓL FORMULARZA PO ZAREJESTROWANIU
                 document.getElementById('reg-email').value = '';
                 document.getElementById('reg-nick').value = '';
                 document.getElementById('reg-pass1').value = '';
                 document.getElementById('reg-pass2').value = '';
-                
-                // WYŚWIETLENIE DUŻEGO ALERTY (MODALA) ZAMIAST MAŁEGO NAPISU
                 document.getElementById('reg-success-modal').style.display = 'flex';
             } else {
                 msg.style.color = "var(--blood)";
                 msg.innerText = d.msg;
             }
-        }
-
-        async function verifyEmail(nick) {
-            const r = await fetch('/api/verify', { 
-                method:'POST', 
-                headers:{'Content-Type':'application/json'}, 
-                body:JSON.stringify({username:nick}) 
-            });
-            const d = await r.json();
-            document.getElementById('email-verify-box').style.display = 'none';
-            document.getElementById('reg-msg').innerText = d.msg;
         }
 
         async function login() {
@@ -742,7 +746,6 @@ function navigate(id) {
             document.getElementById('battle-leaderboard').innerHTML = html;
         }
 
-        // ================= WIELE ARTYKUŁÓW I DATY =================
         async function load() {
             const r = await fetch('/api/articles?t=' + Date.now());
             database = await r.json();
@@ -761,7 +764,6 @@ function navigate(id) {
             grid.innerHTML = ''; 
             let isFirst = true;
 
-            // Pobieramy festiwale z bazy wygenerowane przez AI bota
             window.festivalsData = Object.values(database).filter(v => v.category === 'festival').sort((a, b) => b.timestamp - a.timestamp).slice(0, 6);
             window.currentFestSlide = window.currentFestSlide || 0;
             
@@ -783,13 +785,12 @@ function navigate(id) {
                     const dt = v.timestamp ? formatCardDate(v.timestamp) : (v.date || '');
                     const dateTagHTML = dt ? `<span class="date-tag">${dt}</span>` : '';
                     const tag = `<span class="tag">${v.region} SCENA</span>`;
-                    const leakTagHTML = (v.leakType && v.leakType !== "NONE") ? `<span class="tag" style="color:var(--bg); background:var(--blood); margin-left:10px; margin-right:10px;">${v.leakType}</span>` : '';
+                    const leakTagHTML = (v.leakType && v.leakType !== "NONE") ? `<span class="tag" style="color:var(--acid); background:#0f0e0d; border: 1px solid var(--acid); margin-left:10px; margin-right:10px;">${v.leakType}</span>` : '';
                     
                     if(cat === 'news' && isFirst) {
                         isFirst = false;
                         
                         let festHTML = '';
-                        // Jeśli w bazie jest festiwal od bota, rysuje się ten kwadrat:
                         if(window.festivalsData.length > 0) {
                             festHTML = `
                             <div style="flex: 1; min-width: 300px; background: #111; border: 2px solid var(--acid); padding: 1.5rem; display: flex; flex-direction: column; position: relative; box-shadow: 6px 6px 0 var(--acid);" onclick="event.stopPropagation()">
@@ -797,7 +798,7 @@ function navigate(id) {
                                     <h4 style="margin: 0; color: var(--acid); font-family: 'Syne'; font-size: 1.3rem; letter-spacing: 1px;">🔥 LIVE IN EUROPE 2026</h4>
                                     <div style="display:flex; gap: 10px;">
                                         <button class="fest-arrow hover-target" onclick="event.stopPropagation(); slideFest(-1)">←</button>
-<button class="fest-arrow hover-target" onclick="event.stopPropagation(); slideFest(1)">→</button>
+                                        <button class="fest-arrow hover-target" onclick="event.stopPropagation(); slideFest(1)">→</button>
                                     </div>
                                 </div>
                                 <div style="overflow: hidden; flex: 1; position: relative; display: flex; align-items: center;">
@@ -834,7 +835,32 @@ function navigate(id) {
             });
         }
 
-    
+        // ================= KARUZELA FESTIWALI (POPRAWIONA) =================
+        function renderFestivals() {
+            const track = document.getElementById('fest-track');
+            if(!track || !window.festivalsData || window.festivalsData.length === 0) return;
+            track.innerHTML = '';
+            
+            const uniqueFests = [];
+            const seen = new Set();
+            window.festivalsData.forEach(f => {
+                if(!seen.has(f.artist)) { seen.add(f.artist); uniqueFests.push(f); }
+            });
+            window.festivalsData = uniqueFests;
+
+            window.festivalsData.forEach(f => {
+                const fallbackImg = `https://ui-avatars.com/api/?name=${encodeURIComponent(f.artist)}&background=0f0e0d&color=dbff00&size=200&bold=true`;
+                track.innerHTML += `
+                <div style="flex: 0 0 100%; min-width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-sizing: border-box; padding: 0 10px;">
+                    <img src="${f.img}" onerror="this.onerror=null; this.src='${fallbackImg}';" style="width: 150px; height: 150px; object-fit: cover; border: 2px solid var(--acid); margin-bottom: 15px; border-radius: 12px; box-shadow: 4px 4px 0 var(--blood);">
+                    <h3 style="margin: 0; color: #fff; font-size: 1.5rem; font-family: 'Syne'; line-height: 1.1; text-transform: uppercase;">${f.artist}</h3>
+                    <p style="margin: 5px 0 0 0; color: var(--acid); font-weight: bold; font-family: 'Zilla Slab'; font-size: 1rem; letter-spacing: 1px; text-transform: uppercase;">📍 ${f.festName}</p>
+                </div>`;
+            });
+            window.currentFestSlide = 0;
+            slideFest(0);
+        }
+
         function slideFest(dir) {
             if(!window.festivalsData || window.festivalsData.length === 0) return;
             window.currentFestSlide += dir;
@@ -842,20 +868,19 @@ function navigate(id) {
             if(window.currentFestSlide >= window.festivalsData.length) window.currentFestSlide = 0;
             
             const track = document.getElementById('fest-track');
-            // POPRAWNA MATEMATYKA - przesuwa tylko o 1 kafelek
-            if(track) track.style.transform = 'translateX(-' + (window.currentFestSlide * (100 / window.festivalsData.length)) + '%)';
+            // KLUCZOWA POPRAWKA: Przesuwanie o pełne 100% szerokości kafelka
+            if(track) track.style.transform = `translateX(-${window.currentFestSlide * 100}%)`;
         }
 
         // ================= KARUZELA W ARCHIWUM =================
         let currentArchiveSlide = 0;
         let totalArchiveSlides = 0;
 
-function renderArchive() {
+        function renderArchive() {
             const query = document.getElementById('archive-search').value.toLowerCase();
             const track = document.getElementById('archive-track'); track.innerHTML = '';
             let sortedArticles = Object.entries(database).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
             
-            // ZABEZPIECZENIE: Wyszukiwarka ignoruje wpisy festiwalowe i szuka TYLKO w artykułach, co zapobiega crashom!
             let filtered = sortedArticles.filter(([k, v]) => {
                 if (v.category === 'festival' || !v.title) return false; 
                 return (v.title.toLowerCase().includes(query) || (v.searchTags && v.searchTags.toLowerCase().includes(query)));
@@ -878,7 +903,7 @@ function renderArchive() {
                     const dt = v.timestamp ? formatCardDate(v.timestamp) : (v.date || '');
                     const dateTagHTML = dt ? `<span class="date-tag">${dt}</span>` : '';
                     const tag = `<span class="tag">${v.region} SCENA</span>`;
-                    const leakTagHTML = (v.leakType && v.leakType !== "NONE") ? `<span class="tag" style="color:var(--bg); background:var(--blood);">${v.leakType}</span>` : '';
+                    const leakTagHTML = (v.leakType && v.leakType !== "NONE") ? `<span class="tag" style="color:var(--acid); background:#0f0e0d; border: 1px solid var(--acid); margin-left:10px; margin-right:10px;">${v.leakType}</span>` : '';
 
                     slideHtml += `
                     <div class="card hover-target" onclick="show('${k}')">
@@ -899,22 +924,17 @@ function renderArchive() {
             if (currentArchiveSlide < 0) currentArchiveSlide = 0;
             if (currentArchiveSlide >= totalArchiveSlides) currentArchiveSlide = totalArchiveSlides - 1;
             updateArchiveSlider();
-            
-            // Płynne przewijanie do góry po przełączeniu strony
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function updateArchiveSlider() { 
             document.getElementById('archive-track').style.transform = `translateX(-${currentArchiveSlide * 100}%)`; 
-            // AKTUALIZACJA LICZNIKA STRON
             document.getElementById('archive-page-indicator').innerText = `${currentArchiveSlide + 1} / ${totalArchiveSlides}`;
         }
 
-        // ================= WIDOK ARTYKUŁU I KOMENTARZE =================
         function show(id) {
             currentArticleId = id;
             const d = database[id];
-            
             const dt = d.timestamp ? formatCardDate(d.timestamp) : (d.date || '');
             const dateTag = dt ? `<span class="date-tag" style="color:var(--acid); border-color:var(--acid); margin-left:10px;">${dt}</span>` : '';
             
@@ -929,7 +949,6 @@ function renderArchive() {
             document.getElementById('art-socials').style.display = 'block';
             document.getElementById('art-likes').innerText = d.likes || 0;
             document.getElementById('art-dislikes').innerText = d.dislikes || 0;
-            
             refreshArticleComments(id);
             navigate('article');
         }
@@ -938,7 +957,6 @@ function renderArchive() {
             const d = database[id];
             const commentsBox = document.getElementById('comments-list');
             commentsBox.innerHTML = '';
-            
             const comments = d.comments || [];
             document.getElementById('comments-count').innerText = comments.length;
             
@@ -965,7 +983,6 @@ function renderArchive() {
                 body:JSON.stringify({type}) 
             });
             const d = await r.json();
-            
             if(d.success) {
                 document.getElementById('art-likes').innerText = d.likes;
                 document.getElementById('art-dislikes').innerText = d.dislikes;
@@ -977,13 +994,11 @@ function renderArchive() {
         async function postComment() {
             const text = document.getElementById('new-comment-text').value.trim();
             if(!text) return;
-            
             const r = await fetch(`/api/article/${currentArticleId}/comment`, { 
                 method:'POST', 
                 headers:{'Content-Type':'application/json'}, 
                 body:JSON.stringify({username: currentUser, text}) 
             });
-            
             const d = await r.json();
             if(d.success) {
                 document.getElementById('new-comment-text').value = '';
@@ -992,7 +1007,6 @@ function renderArchive() {
             }
         }
 
-        // ================= DIGGER AI Z ANIMACJĄ =================
         function toggleAI() {
             const aiBox = document.getElementById('digger-ai');
             if(aiBox.classList.contains('open')) {
@@ -1008,32 +1022,21 @@ function renderArchive() {
                 const box = document.getElementById('ai-chat-box'); 
                 const v = e.target.value.trim(); 
                 if(!v) return;
-                
                 e.target.value = '';
-                
-                // Wiadomość użytkownika
                 box.innerHTML += `<div><b style="color:#fff">TY:</b> ${v}</div>`;
                 box.scrollTop = box.scrollHeight;
-                
-                // Animacja "pisania AI"
                 const typingId = 'typing-' + Date.now();
                 box.innerHTML += `<div id="${typingId}" style="color:var(--acid); opacity:0.7;" class="ai-typing-blink"><b>AI:</b> <i>analizuje...</i></div>`;
                 box.scrollTop = box.scrollHeight;
-                
                 try {
                     const r = await fetch('/api/chat', { 
                         method:'POST', 
                         headers:{'Content-Type':'application/json'}, 
                         body:JSON.stringify({message:v}) 
                     });
-                    
                     const d = await r.json(); 
-                    
-                    // Usunięcie animacji pisania
                     const typingEl = document.getElementById(typingId);
                     if(typingEl) typingEl.remove();
-                    
-                    // Właściwa odpowiedź
                     box.innerHTML += `<div style="color:var(--acid)"><b>AI:</b> ${d.reply}</div>`;
                     box.scrollTop = box.scrollHeight;
                 } catch(err) {
@@ -1052,16 +1055,14 @@ function renderArchive() {
             setTimeout(() => a.classList.remove('show'), 6000);
         });
 
-        // ================= MIXER RAVE.DJ STYLE =================
+        // ================= THE MIXER (NAPRAWIONA LOGIKA) =================
         let playerMixerA = null; 
         let playerMixerB = null; 
         let deckAId = null; 
         let deckBId = null; 
         let isMixerPlaying = false;
         
-        function onYouTubeIframeAPIReady() { 
-            ytAPIReady = true; 
-        }
+        function onYouTubeIframeAPIReady() { window.ytAPIReady = true; }
         
         socket.on('searchResultsMixer', (d) => {
             const container = document.getElementById('res' + d.deck); 
@@ -1076,272 +1077,125 @@ function renderArchive() {
 
         function loadDeckMixer(deck, id, title) {
             document.getElementById('res' + deck).innerHTML = `<h4 style="color:var(--acid)">WYBRANO: ${title}</h4>`;
-            
             if (deck === 'A') { deckAId = id; } else { deckBId = id; }
-            
             if (deckAId && deckBId) {
                 document.getElementById('mixer-play-btn').disabled = false;
                 document.getElementById('mixer-status').innerText = "TRACKI ZGOTOWANE. ODPALAJ GENERATOR.";
             }
         }
 
-function generateMashup() { 
+        function generateMashup() { 
+            if (typeof deckAId === 'undefined' || !deckAId || typeof deckBId === 'undefined' || !deckBId) {
+                alert("EJ! Wybierz oba tracki!"); return;
+            }
             document.getElementById('mixer-play-btn').style.display = 'none'; 
-            document.getElementById('mix-progress-container').style.display = 'block'; 
-            let progress = 0; 
+            const progressContainer = document.getElementById('mix-progress-container');
             const status = document.getElementById('mixer-status'); 
-            const bar = document.getElementById('mix-progress'); 
+            progressContainer.style.display = 'block'; 
+            let bar = document.getElementById('mix-progress');
+            bar.style.width = '0%';
+            status.innerText = "INICJALIZACJA AUDIO...";
 
-            // NAPRAWA BŁĘDU API: Zawsze tworzymy nowe pojemniki na audio z Youtube, by uniknąć crasha
-            if (!document.getElementById('mixer-yt-a')) { const d = document.createElement('div'); d.id = 'mixer-yt-a'; d.style.display = 'none'; document.body.appendChild(d); }
-            if (!document.getElementById('mixer-yt-b')) { const d = document.createElement('div'); d.id = 'mixer-yt-b'; d.style.display = 'none'; document.body.appendChild(d); }
+            // KLUCZOWA NAPRAWA: Jeśli gracze nie istnieją, stwórz je. Jeśli istnieją - przeładuj.
+            if (!window.playerMixerA) {
+                const da = document.createElement('div'); da.id = 'mixer-yt-a'; 
+                document.body.appendChild(da); 
+                window.playerMixerA = new YT.Player('mixer-yt-a', { videoId: deckAId, width: 300, height: 300, playerVars: { autoplay: 0, controls: 0 } }); 
+                document.getElementById('mixer-yt-a').style.cssText = 'position:fixed; top:-9999px; left:-9999px;';
+            } else { window.playerMixerA.cueVideoById(deckAId); }
 
-            if(playerMixerA) { playerMixerA.destroy(); playerMixerA = null; } 
-            if(playerMixerB) { playerMixerB.destroy(); playerMixerB = null; } 
-            
-            playerMixerA = new YT.Player('mixer-yt-a', { videoId: deckAId, playerVars: { controls: 0, autoplay: 0 } }); 
-            playerMixerB = new YT.Player('mixer-yt-b', { videoId: deckBId, playerVars: { controls: 0, autoplay: 0 } }); 
-            
+            if (!window.playerMixerB) {
+                const db = document.createElement('div'); db.id = 'mixer-yt-b'; 
+                document.body.appendChild(db); 
+                window.playerMixerB = new YT.Player('mixer-yt-b', { videoId: deckBId, width: 300, height: 300, playerVars: { autoplay: 0, controls: 0 } }); 
+                document.getElementById('mixer-yt-b').style.cssText = 'position:fixed; top:-9999px; left:-9999px;';
+            } else { window.playerMixerB.cueVideoById(deckBId); }
+
+            let progress = 0; 
             const int = setInterval(() => { 
                 progress += 5; bar.style.width = progress + '%'; 
-                if(progress === 25) status.innerText = "EKSTRAKCJA WOKALU (STEM SEPARATION)..."; 
-                if(progress === 60) status.innerText = "DOPASOWYWANIE BPM I TONACJI..."; 
-                if(progress === 90) status.innerText = "RENDEROWANIE MASHUPU..."; 
+                if(progress === 30) status.innerText = "PRZYGOTOWANIE DECKÓW..."; 
+                if(progress === 70) status.innerText = "SYNCHRONIZACJA BPM..."; 
                 if(progress >= 100) { 
                     clearInterval(int); 
-                    document.getElementById('mix-progress-container').style.display = 'none'; 
-                    status.innerText = "MASHUP ODTWARZANY. (AUDIO SYNCED)"; 
-                    
+                    progressContainer.style.display = 'none'; 
+                    status.innerHTML = "<span style='color: var(--acid); font-size: 1.5rem;'>MASHUP GOTOWY!</span>"; 
+                    // UKRYWANIE DECKÓW PO GENEROWANIU
+                    document.querySelectorAll('.deck-box').forEach(deck => deck.style.display = 'none');
                     const pauseBtn = document.getElementById('mixer-pause-btn');
-                    pauseBtn.style.display = 'block'; 
-                    pauseBtn.innerText = "WYCISZ AUDIO"; 
-                    pauseBtn.style.background = "var(--blood)";
-                    pauseBtn.style.color = "#fff";
-
-                    setTimeout(() => { 
-                        if(playerMixerA && playerMixerA.playVideo) { playerMixerA.setVolume(70); playerMixerA.playVideo(); }
-                        if(playerMixerB && playerMixerB.playVideo) { playerMixerB.setVolume(100); playerMixerB.playVideo(); }
-                        isMixerPlaying = true; 
-                    }, 1000); 
+                    if(pauseBtn) {
+                        pauseBtn.style.display = 'block'; 
+                        pauseBtn.innerText = "▶ ODPAL MASHUP"; 
+                        pauseBtn.style.background = "var(--acid)"; 
+                        window.isMixerPlaying = false; 
+                    }
                 } 
-            }, 300); 
+            }, 100); 
         } 
 
         function toggleMixerPlay() { 
             const btn = document.getElementById('mixer-pause-btn'); 
-            if(isMixerPlaying) { 
-                if(playerMixerA && playerMixerA.pauseVideo) playerMixerA.pauseVideo(); 
-                if(playerMixerB && playerMixerB.pauseVideo) playerMixerB.pauseVideo(); 
-                btn.innerText = "WZNÓW AUDIO"; 
-                btn.style.background = "var(--acid)"; 
-                btn.style.color = "#000"; 
-                isMixerPlaying = false; 
+            if(window.isMixerPlaying) { 
+                try { window.playerMixerA.pauseVideo(); window.playerMixerB.pauseVideo(); } catch(e) {}
+                if(btn) { btn.innerText = "▶ WZNÓW AUDIO"; btn.style.background = "var(--acid)"; btn.style.color = "#000"; }
+                window.isMixerPlaying = false; 
             } else { 
-                if(playerMixerA && playerMixerA.playVideo) playerMixerA.playVideo(); 
-                if(playerMixerB && playerMixerB.playVideo) playerMixerB.playVideo(); 
-                btn.innerText = "WYCISZ AUDIO"; 
-                btn.style.background = "var(--blood)"; 
-                btn.style.color = "#fff"; 
-                isMixerPlaying = true; 
+                try {
+                    window.playerMixerA.unMute(); window.playerMixerA.setVolume(60); window.playerMixerA.playVideo(); 
+                    window.playerMixerB.unMute(); window.playerMixerB.setVolume(100); window.playerMixerB.playVideo(); 
+                } catch(e) {}
+                if(btn) { btn.innerText = "⏸ WYCISZ AUDIO"; btn.style.background = "var(--blood)"; btn.style.color = "#fff"; }
+                window.isMixerPlaying = true; 
             } 
         }
 
-        function toggleMixerPlay() {
-            const btn = document.getElementById('mixer-pause-btn');
-            
-            if(isMixerPlaying) { 
-                playerMixerA.pauseVideo(); 
-                playerMixerB.pauseVideo(); 
-                btn.innerText = "PLAY AUDIO"; 
-                btn.style.background = "var(--acid)"; 
-                btn.style.color = "#000"; 
-                isMixerPlaying = false; 
-            } else { 
-                playerMixerA.playVideo(); 
-                playerMixerB.playVideo(); 
-                btn.innerText = "PAUSE AUDIO"; 
-                btn.style.background = "var(--blood)"; 
-                btn.style.color = "#fff"; 
-                isMixerPlaying = true; 
-            }
-        }
-
         // ================= AUX BATTLE =================
-        let myRoomId = null, isHost = false, ytPlayerBattle = null, ytAPIReady = false, points = 1000, guessTime = 30, scoreInterval, guessInterval;
-        
+        let myRoomId = null, isHost = false, ytPlayerBattle = null, points = 1000, guessTime = 30, scoreInterval, guessInterval;
         function createRoom() { 
             const alias = currentUser || document.getElementById('host-name').value || "Host"; 
-            isHost = true; 
-            socket.emit('createRoom', { alias, password: "" }); 
+            isHost = true; socket.emit('createRoom', { alias, password: "" }); 
         }
-        
         function joinRoom(roomId) { 
             const alias = currentUser || document.getElementById('join-alias').value || "Gracz"; 
             socket.emit('joinRoom', { roomId, alias, password: "" }); 
         }
-        
         socket.on('updateRooms', (roomsObj) => {
-            const list = document.getElementById('live-rooms-list'); 
-            list.innerHTML = ''; 
+            const list = document.getElementById('live-rooms-list'); list.innerHTML = ''; 
             const rooms = Object.values(roomsObj); 
-            
-            if(rooms.length===0) {
-                return list.innerHTML = '<p style="opacity:0.5;">Brak otwartych sesji.</p>';
-            }
-            
+            if(rooms.length===0) return list.innerHTML = '<p style="opacity:0.5;">Brak otwartych sesji.</p>';
             rooms.forEach(r => { 
-                list.innerHTML += `
-                <div class="room-item">
-                    <span><strong>${r.id}</strong> (Host: ${r.hostName})</span>
-                    <button class="btn hover-target" style="padding:8px 15px;" onclick="joinRoom('${r.id}')">GRAJ</button>
-                </div>`; 
+                list.innerHTML += `<div class="room-item"><span><strong>${r.id}</strong> (Host: ${r.hostName})</span><button class="btn hover-target" style="padding:8px 15px;" onclick="joinRoom('${r.id}')">GRAJ</button></div>`; 
             });
         });
-        
         socket.on('roomCreated', (r) => { 
-            myRoomId = r.id; 
-            document.getElementById('lobby-ui').style.display='none'; 
+            myRoomId = r.id; document.getElementById('lobby-ui').style.display='none'; 
             document.getElementById('game-arena').style.display='block'; 
             document.getElementById('arena-room-id').innerText="SESJA: " + r.id; 
         });
-        
         socket.on('gameStarted', (r) => { 
-            document.getElementById('lobby-ui').style.display='none'; 
-            document.getElementById('game-arena').style.display='block'; 
+            document.getElementById('lobby-ui').style.display='none'; document.getElementById('game-arena').style.display='block'; 
             document.getElementById('arena-room-id').innerText="SESJA: " + r.id; 
-            document.getElementById('game-controls').style.display='block'; 
-            if (isHost) document.getElementById('host-view').style.display='block'; 
-            else myRoomId = r.id; 
+            if (isHost) document.getElementById('host-view').style.display='block'; else myRoomId = r.id; 
         });
-        
         socket.on('searchResults', (v) => { 
             const c = isHost ? document.getElementById('yt-search-results-host') : document.getElementById('yt-search-results-guesser'); 
-            c.innerHTML=''; 
-            v.forEach(vid => { 
-                c.innerHTML += `
-                <div class="yt-result-item hover-target" onclick="${isHost ? `selectAndSubmitTrack('${vid.id}','${vid.title.replace(/'/g,"\\'")}')` : `selectGuessTrack('${vid.id}','${vid.title.replace(/'/g,"\\'")}')`}">
-                    <img src="${vid.thumb}" style="width:80px; margin-right:15px;">
-                    <span>${vid.title}</span>
-                </div>`; 
+            c.innerHTML=''; v.forEach(vid => { 
+                c.innerHTML += `<div class="yt-result-item hover-target" onclick="${isHost ? `selectAndSubmitTrack('${vid.id}','${vid.title.replace(/'/g,"\\'")}')` : `selectGuessTrack('${vid.id}','${vid.title.replace(/'/g,"\\'")}')`}">
+                <img src="${vid.thumb}" style="width:80px; margin-right:15px;"><span>${vid.title}</span></div>`; 
             });
         });
-        
-        function selectAndSubmitTrack(id, title) { 
-            socket.emit('submitTrack', { roomId: myRoomId, ytId: id, title: title }); 
-            document.getElementById('yt-search-results-host').innerHTML = '<h3 style="color:var(--acid);">WYSŁANE DO RYWALA!</h3>'; 
-        }
-        
+        function selectAndSubmitTrack(id, title) { socket.emit('submitTrack', { roomId: myRoomId, ytId: id, title: title }); document.getElementById('yt-search-results-host').innerHTML = '<h3 style="color:var(--acid);">WYSŁANE DO RYWALA!</h3>'; }
         socket.on('trackPlaying', (r) => { 
             if(!isHost) { 
                 document.getElementById('guesser-view').style.display='block'; 
-                if(ytPlayerBattle) { 
-                    ytPlayerBattle.loadVideoById(r.currentTrack); 
-                    ytPlayerBattle.pauseVideo(); 
-                    document.getElementById('btn-play-audio').disabled=false; 
-                    document.getElementById('btn-play-audio').innerText="ODTWÓRZ AUDIO"; 
-                } else { 
-                    ytPlayerBattle = new YT.Player('yt-player',{
-                        videoId:r.currentTrack,
-                        events:{'onReady':()=>{
-                            document.getElementById('btn-play-audio').disabled=false; 
-                            document.getElementById('btn-play-audio').innerText="ODTWÓRZ AUDIO";
-                        }}
-                    }); 
-                } 
-            } else { 
-                document.getElementById('host-view').style.display='none'; 
-            } 
+                if(ytPlayerBattle) { ytPlayerBattle.loadVideoById(r.currentTrack); ytPlayerBattle.pauseVideo(); } 
+                else { ytPlayerBattle = new YT.Player('yt-player',{ videoId:r.currentTrack, events:{'onReady':()=>{ document.getElementById('btn-play-audio').disabled=false; document.getElementById('btn-play-audio').innerText="ODTWÓRZ AUDIO";}}}); } 
+            } else { document.getElementById('host-view').style.display='none'; } 
         });
-        
-        function startListening() { 
-            document.getElementById('btn-play-audio').style.display='none'; 
-            document.getElementById('btn-stop-audio').style.display='block'; 
-            ytPlayerBattle.playVideo(); 
-            scoreInterval=setInterval(()=>{
-                points-=50;
-                document.getElementById('points-val').innerText=points;
-                if(points<=500) stopAndGuess();
-            }, 1000); 
-        }
-        
-        function stopAndGuess() { 
-            clearInterval(scoreInterval); 
-            ytPlayerBattle.pauseVideo(); 
-            document.getElementById('btn-stop-audio').style.display='none'; 
-            document.getElementById('guess-form').style.display='block'; 
-            
-            guessInterval=setInterval(()=>{
-                guessTime--;
-                document.getElementById('countdown-val').innerText=guessTime;
-                if(guessTime<=0){
-                    clearInterval(guessInterval);
-                    socket.emit('makeGuess',{roomId:myRoomId,guess:"timeout"});
-                }
-            }, 1000); 
-        }
-        
-        function selectGuessTrack(id, title) { 
-            clearInterval(guessInterval); 
-            socket.emit('makeGuess', { roomId: myRoomId, ytId: id, title: title, points: points }); 
-        }
-        
-        socket.on('gameOver', (d) => { 
-            clearInterval(scoreInterval); 
-            clearInterval(guessInterval); 
-            if(ytPlayerBattle) ytPlayerBattle.stopVideo(); 
-            
-            if (currentUser && currentUser === d.winner && d.points > 0) {
-                socket.emit('claimPoints', { username: currentUser, points: d.points }); 
-            }
-            
-            document.getElementById('overlay-msg').innerHTML = d.msg + "<br><br>Grasz jako: " + (currentUser ? currentUser : "Gość"); 
-            document.getElementById('game-overlay').style.display = 'flex'; 
-        });
-
-// ===============================================
-        // LOGIKA DLA KARUZELI FESTIWALI (NAPRAWIONA)
-        // ===============================================
-        function renderFestivals() {
-            const track = document.getElementById('fest-track');
-            if(!track || !window.festivalsData) return;
-            track.innerHTML = '';
-            
-            // ZABEZPIECZENIE: Usuwa duplikaty (np. 3x Drake) na żywo
-            const uniqueFests = [];
-            const seen = new Set();
-            window.festivalsData.forEach(f => {
-                if(!seen.has(f.artist)) {
-                    seen.add(f.artist);
-                    uniqueFests.push(f);
-                }
-            });
-            window.festivalsData = uniqueFests;
-
-            window.festivalsData.forEach(f => {
-                // Awaryjne koło ratunkowe, by NIGDY nie pokazało zepsutej ikonki
-                const fallbackImg = `https://ui-avatars.com/api/?name=${encodeURIComponent(f.artist)}&background=0f0e0d&color=dbff00&size=200&bold=true`;
-                
-                track.innerHTML += `
-                <div style="flex: 0 0 100%; min-width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-sizing: border-box; padding: 0 10px;">
-                    <img src="${f.img}" onerror="this.onerror=null; this.src='${fallbackImg}';" style="width: 150px; height: 150px; object-fit: cover; border: 2px solid var(--acid); margin-bottom: 15px; border-radius: 12px; box-shadow: 4px 4px 0 var(--blood);">
-                    <h3 style="margin: 0; color: #fff; font-size: 1.5rem; font-family: 'Syne'; line-height: 1.1; text-transform: uppercase; word-break: break-word;">${f.artist}</h3>
-                    <p style="margin: 5px 0 0 0; color: var(--acid); font-weight: bold; font-family: 'Zilla Slab'; font-size: 1rem; letter-spacing: 1px; text-transform: uppercase;">📍 ${f.festName}</p>
-                </div>`;
-            });
-            window.currentFestSlide = 0;
-            slideFest(0);
-        }
-
-        function slideFest(dir) {
-            if(!window.festivalsData || window.festivalsData.length === 0) return;
-            window.currentFestSlide += dir;
-            if(window.currentFestSlide < 0) window.currentFestSlide = window.festivalsData.length - 1;
-            if(window.currentFestSlide >= window.festivalsData.length) window.currentFestSlide = 0;
-            
-            const track = document.getElementById('fest-track');
-            // IDEALNA MATEMATYKA - przesuwa perfekcyjnie o 1 ekran, zero czarnych dziur
-            if(track) track.style.transform = `translateX(-${window.currentFestSlide * 100}%)`;
-        }
+        function startListening() { document.getElementById('btn-play-audio').style.display='none'; document.getElementById('btn-stop-audio').style.display='block'; ytPlayerBattle.playVideo(); scoreInterval=setInterval(()=>{ points-=50; document.getElementById('points-val').innerText=points; if(points<=500) stopAndGuess();}, 1000); }
+        function stopAndGuess() { clearInterval(scoreInterval); ytPlayerBattle.pauseVideo(); document.getElementById('btn-stop-audio').style.display='none'; document.getElementById('guess-form').style.display='block'; guessInterval=setInterval(()=>{ guessTime--; document.getElementById('countdown-val').innerText=guessTime; if(guessTime<=0){ clearInterval(guessInterval); socket.emit('makeGuess',{roomId:myRoomId,guess:"timeout"});}}, 1000); }
+        function selectGuessTrack(id, title) { clearInterval(guessInterval); socket.emit('makeGuess', { roomId: myRoomId, ytId: id, title: title, points: points }); }
+        socket.on('gameOver', (d) => { clearInterval(scoreInterval); clearInterval(guessInterval); if(ytPlayerBattle) ytPlayerBattle.stopVideo(); if (currentUser && currentUser === d.winner && d.points > 0) { socket.emit('claimPoints', { username: currentUser, points: d.points }); } document.getElementById('overlay-msg').innerHTML = d.msg + "<br><br>Grasz jako: " + (currentUser ? currentUser : "Gość"); document.getElementById('game-overlay').style.display = 'flex'; });
 
         // INIT
         window.onload = () => { 
