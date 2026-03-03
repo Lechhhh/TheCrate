@@ -561,7 +561,7 @@
         }
 
         // ================= NAWIGACJA Z PAMIĘCIĄ =================
-        function navigate(id) {
+function navigate(id) {
             const nav = document.getElementById('nav-links');
             if (nav && nav.classList.contains('open')) {
                 nav.classList.remove('open');
@@ -571,6 +571,9 @@
                 previousView = currentView;
             } else if (id !== 'article') {
                 currentView = id; 
+                // ZABEZPIECZENIE: Gdy wychodzisz z artykułu, natychmiastowo niszczy iframe z wideo!
+                const artContent = document.getElementById('art-content');
+                if (artContent) artContent.innerHTML = '';
             }
 
             document.querySelectorAll('.view-section').forEach(v => {
@@ -580,15 +583,9 @@
             document.getElementById('view-' + id).classList.add('active');
             window.scrollTo(0,0);
             
-            if(id === 'battle') {
-                fetchLeaderboard();
-            }
-            if(id === 'archive') {
-                renderArchive();
-            }
-            if(id !== 'article') {
-                currentArticleId = null;
-            }
+            if(id === 'battle') fetchLeaderboard();
+            if(id === 'archive') renderArchive();
+            if(id !== 'article') currentArticleId = null;
         }
 
         function goBack() {
@@ -853,32 +850,24 @@
         let currentArchiveSlide = 0;
         let totalArchiveSlides = 0;
 
-        function renderArchive() {
+function renderArchive() {
             const query = document.getElementById('archive-search').value.toLowerCase();
-            const track = document.getElementById('archive-track');
-            track.innerHTML = '';
+            const track = document.getElementById('archive-track'); track.innerHTML = '';
+            let sortedArticles = Object.entries(database).sort((a, b) => (b[1].timestamp || 0) - (a[1].timestamp || 0));
             
-            let sortedArticles = Object.entries(database).sort((a, b) => {
-                return (b[1].timestamp || 0) - (a[1].timestamp || 0);
-            });
-            
+            // ZABEZPIECZENIE: Wyszukiwarka ignoruje wpisy festiwalowe i szuka TYLKO w artykułach, co zapobiega crashom!
             let filtered = sortedArticles.filter(([k, v]) => {
+                if (v.category === 'festival' || !v.title) return false; 
                 return (v.title.toLowerCase().includes(query) || (v.searchTags && v.searchTags.toLowerCase().includes(query)));
             });
 
-            const chunkSize = 6; 
-            totalArchiveSlides = Math.ceil(filtered.length / chunkSize);
-            
+            const chunkSize = 6; totalArchiveSlides = Math.ceil(filtered.length / chunkSize);
             if(totalArchiveSlides === 0) { 
                 track.innerHTML = '<p style="font-family:Syne; font-size:1.5rem;">Brak wyników w archiwum.</p>'; 
                 document.getElementById('archive-page-indicator').style.display = 'none';
                 return; 
             } else {
                 document.getElementById('archive-page-indicator').style.display = 'block';
-            }
-            if(totalArchiveSlides === 0) { 
-                track.innerHTML = '<p style="font-family:Syne; font-size:1.5rem;">Brak wyników w archiwum.</p>'; 
-                return; 
             }
 
             for (let i = 0; i < filtered.length; i += chunkSize) {
@@ -889,23 +878,20 @@
                     const dt = v.timestamp ? formatCardDate(v.timestamp) : (v.date || '');
                     const dateTagHTML = dt ? `<span class="date-tag">${dt}</span>` : '';
                     const tag = `<span class="tag">${v.region} SCENA</span>`;
-                    
+                    const leakTagHTML = (v.leakType && v.leakType !== "NONE") ? `<span class="tag" style="color:var(--bg); background:var(--blood);">${v.leakType}</span>` : '';
+
                     slideHtml += `
                     <div class="card hover-target" onclick="show('${k}')">
                         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; align-items:center;">
-                            ${tag}${dateTagHTML}
+                            ${tag}${leakTagHTML}${dateTagHTML}
                         </div>
                         <h3>${v.title}</h3>
                         <p>${v.snippet}</p>
                     </div>`;
                 });
-
-                slideHtml += `</div></div>`;
-                track.innerHTML += slideHtml;
+                slideHtml += `</div></div>`; track.innerHTML += slideHtml;
             }
-            
-            currentArchiveSlide = 0;
-            updateArchiveSlider();
+            currentArchiveSlide = 0; updateArchiveSlider();
         }
 
         function slideArchive(dir) {
@@ -1099,43 +1085,65 @@
             }
         }
 
-        function generateMashup() {
-            document.getElementById('mixer-play-btn').style.display = 'none';
-            document.getElementById('mix-progress-container').style.display = 'block';
-            
+function generateMashup() { 
+            document.getElementById('mixer-play-btn').style.display = 'none'; 
+            document.getElementById('mix-progress-container').style.display = 'block'; 
             let progress = 0; 
-            const status = document.getElementById('mixer-status');
-            const bar = document.getElementById('mix-progress');
+            const status = document.getElementById('mixer-status'); 
+            const bar = document.getElementById('mix-progress'); 
 
-            if(playerMixerA) playerMixerA.destroy();
-            if(playerMixerB) playerMixerB.destroy();
+            // NAPRAWA BŁĘDU API: Zawsze tworzymy nowe pojemniki na audio z Youtube, by uniknąć crasha
+            if (!document.getElementById('mixer-yt-a')) { const d = document.createElement('div'); d.id = 'mixer-yt-a'; d.style.display = 'none'; document.body.appendChild(d); }
+            if (!document.getElementById('mixer-yt-b')) { const d = document.createElement('div'); d.id = 'mixer-yt-b'; d.style.display = 'none'; document.body.appendChild(d); }
+
+            if(playerMixerA) { playerMixerA.destroy(); playerMixerA = null; } 
+            if(playerMixerB) { playerMixerB.destroy(); playerMixerB = null; } 
             
-            playerMixerA = new YT.Player('mixer-yt-a', { videoId: deckAId, playerVars: { controls: 0, autoplay: 0 } });
-            playerMixerB = new YT.Player('mixer-yt-b', { videoId: deckBId, playerVars: { controls: 0, autoplay: 0 } });
-
-            const int = setInterval(() => {
-                progress += 5; 
-                bar.style.width = progress + '%';
-                
-                if(progress === 25) status.innerText = "EKSTRAKCJA WOKALU (STEM SEPARATION)...";
-                if(progress === 60) status.innerText = "DOPASOWYWANIE BPM I TONACJI...";
-                if(progress === 90) status.innerText = "RENDEROWANIE MASHUPU...";
-                
-                if(progress >= 100) {
-                    clearInterval(int);
-                    document.getElementById('mix-progress-container').style.display = 'none';
-                    status.innerText = "MASHUP ODTWARZANY. (AUDIO SYNCED)";
-                    document.getElementById('mixer-pause-btn').style.display = 'block';
+            playerMixerA = new YT.Player('mixer-yt-a', { videoId: deckAId, playerVars: { controls: 0, autoplay: 0 } }); 
+            playerMixerB = new YT.Player('mixer-yt-b', { videoId: deckBId, playerVars: { controls: 0, autoplay: 0 } }); 
+            
+            const int = setInterval(() => { 
+                progress += 5; bar.style.width = progress + '%'; 
+                if(progress === 25) status.innerText = "EKSTRAKCJA WOKALU (STEM SEPARATION)..."; 
+                if(progress === 60) status.innerText = "DOPASOWYWANIE BPM I TONACJI..."; 
+                if(progress === 90) status.innerText = "RENDEROWANIE MASHUPU..."; 
+                if(progress >= 100) { 
+                    clearInterval(int); 
+                    document.getElementById('mix-progress-container').style.display = 'none'; 
+                    status.innerText = "MASHUP ODTWARZANY. (AUDIO SYNCED)"; 
                     
-                    setTimeout(() => {
-                        playerMixerA.setVolume(70); 
-                        playerMixerB.setVolume(100);
-                        playerMixerA.playVideo(); 
-                        playerMixerB.playVideo();
-                        isMixerPlaying = true;
-                    }, 1000);
-                }
-            }, 300);
+                    const pauseBtn = document.getElementById('mixer-pause-btn');
+                    pauseBtn.style.display = 'block'; 
+                    pauseBtn.innerText = "WYCISZ AUDIO"; 
+                    pauseBtn.style.background = "var(--blood)";
+                    pauseBtn.style.color = "#fff";
+
+                    setTimeout(() => { 
+                        if(playerMixerA && playerMixerA.playVideo) { playerMixerA.setVolume(70); playerMixerA.playVideo(); }
+                        if(playerMixerB && playerMixerB.playVideo) { playerMixerB.setVolume(100); playerMixerB.playVideo(); }
+                        isMixerPlaying = true; 
+                    }, 1000); 
+                } 
+            }, 300); 
+        } 
+
+        function toggleMixerPlay() { 
+            const btn = document.getElementById('mixer-pause-btn'); 
+            if(isMixerPlaying) { 
+                if(playerMixerA && playerMixerA.pauseVideo) playerMixerA.pauseVideo(); 
+                if(playerMixerB && playerMixerB.pauseVideo) playerMixerB.pauseVideo(); 
+                btn.innerText = "WZNÓW AUDIO"; 
+                btn.style.background = "var(--acid)"; 
+                btn.style.color = "#000"; 
+                isMixerPlaying = false; 
+            } else { 
+                if(playerMixerA && playerMixerA.playVideo) playerMixerA.playVideo(); 
+                if(playerMixerB && playerMixerB.playVideo) playerMixerB.playVideo(); 
+                btn.innerText = "WYCISZ AUDIO"; 
+                btn.style.background = "var(--blood)"; 
+                btn.style.color = "#fff"; 
+                isMixerPlaying = true; 
+            } 
         }
 
         function toggleMixerPlay() {

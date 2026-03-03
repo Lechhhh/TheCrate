@@ -790,5 +790,19 @@
     "artist": "Skepta",
     "festName": "Clout Festival 2026",
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Skepta_at_the_2015_NME_Awards.jpg/800px-Skepta_at_the_2015_NME_Awards.jpg"
+  },
+  "fest_vega": {
+    "category": "festival",
+    "timestamp": 1772561957282,
+    "artist": "Vega",
+    "festName": "Splash! Festival 2026",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Vega_-_2015.jpg/800px-Vega_-_2015.jpg"
+  },
+  "fest_martingarrix": {
+    "category": "festival",
+    "timestamp": 1772562257226,
+    "artist": "Martin Garrix",
+    "festName": "Open'er Festival 2026",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Martin_Garrix_Veld_2016.jpg/800px-Martin_Garrix_Veld_2016.jpg"
   }
 }
